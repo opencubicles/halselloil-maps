@@ -200,6 +200,7 @@ export default {
       markersVisible: true,
       polylineVisible: true,
       without_bounds: false,
+      refresh_only_layers: false,
 
       tiles: [
         {
@@ -298,6 +299,7 @@ export default {
         setTimeout(() => {
           if(this.api_number != '' || this.markersVisible != 'false' || this.polylineVisible != 'false' || this.wellDataVisible != 'false' || this.surveyLayerVisible != 'false'){
             this.without_bounds = false;
+            this.refresh_only_layers = true;
             this.getWellData()
           }
 
@@ -321,6 +323,7 @@ export default {
       }
       this.api_number = api_number
       this.operator_name = operator_name
+      this.refresh_only_layers = false;
       this.show=false;
       if(this.api_number != '' || this.operator_name != '' || this.markersVisible != 'false' || this.polylineVisible != 'false' || this.wellDataVisible != 'false' || this.surveyLayerVisible != 'false'){
         this.getWellData()
@@ -369,6 +372,8 @@ export default {
         par['show_survey_layers'] = this.surveyLayerVisible;
 
         par['without_bounds'] = this.without_bounds;
+        par['refresh_only_layers'] = this.refresh_only_layers;
+        
       }
       else{
 
@@ -400,7 +405,8 @@ export default {
         'show_well_data' : this.wellDataVisible,
         'show_survey_layers' : this.surveyLayerVisible,
         'api_number'  : this.api_number,
-        'without_bounds' : false
+        'without_bounds' : false,
+        'refresh_only_layers' : this.refresh_only_layers,
         }
 
       }
@@ -416,24 +422,29 @@ export default {
 
       })
       .then(function (response) {
-        vm.well_data_markers = null;
+        if(!vm.refresh_only_layers){
+          vm.well_data_markers = null;
+          vm.well_data_polylines = null;
+        
+        }
         vm.well_data_json = null;
-        vm.well_data_polylines = null;
         vm.geo_json_data = null;
         vm.cancelSource = null;
 
         if(response.data.result && response.data.result == 'error'){
-          alert('test');
+          console.log('error')
 
         }else{
          console.log(response)
-          if(response.data.parsed_data){
-            vm.well_data_markers = response.data.parsed_data.filter((item)=>{
-             return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'N'
-           });
-            vm.well_data_polylines = response.data.parsed_data.filter((item)=>{
-             return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'Y'
-          });
+          if(!vm.refresh_only_layers){
+            if(response.data.parsed_data){
+              vm.well_data_markers = response.data.parsed_data.filter((item)=>{
+               return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'N'
+              });
+              vm.well_data_polylines = response.data.parsed_data.filter((item)=>{
+               return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'Y'
+              });
+            }
 
           }
 
@@ -476,8 +487,10 @@ export default {
           this.map.on('dragend', () => {
               var vm_this_2 = vm_this;
               setTimeout(() => {
-              vm_this_2.bounds = vm_this_2.map.getBounds();
+                vm_this.refresh_only_layers = false;
+                vm_this_2.bounds = vm_this_2.map.getBounds();
                   vm_this_2.getWellData(vm_this_2.bounds);
+
               }, 100)
 
           });
@@ -485,8 +498,10 @@ export default {
           this.map.on('zoomend', () => {
               var vm_this_2 = vm_this;
               setTimeout(() => {
+                vm_this.refresh_only_layers = false;
               vm_this_2.bounds = vm_this_2.map.getBounds();
                   vm_this_2.getWellData(vm_this_2.bounds);
+
               }, 100)
           });
 

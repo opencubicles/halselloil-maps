@@ -13,7 +13,7 @@
             <input v-model="api_number" type="text" />
           </td>
         </tr>
-        <tr>
+        <tr v-if="false">
           <th>Operator Name:</th>
           <td style="text-align: center">
             <input v-model="operator_name" type="text" />
