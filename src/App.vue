@@ -24,7 +24,7 @@
               <img style="width: 20px" src="./assets/symnum_11.png" />: Permit
               vertical Well
             </li>
-            <li class="list-group-item">Blue Line: Permit Horizontal Wells</li>
+            <li class="list-group-item">Blue Line: Permit Horizontal Well</li>
             <li class="list-group-item">
               <img style="width: 20px" src="./assets/symnum_10.png" /> Survey
               layer Point
