@@ -4,79 +4,67 @@
     v-bind="$attrs"
     classes="modal-container"
     content-class="modal-content"
-    >
+  >
     <div class="modal_content">
-        <table>
-          <tr>
-            <th>Api Number:</th>
-            <td style="text-align: center">
-              <input
-                v-model="api_number"
-                type="text"
-              >
-            </td>
-          </tr>
-          <tr>
-            <th>Operator Name:</th>
-            <td style="text-align: center">
-              <input
-                v-model="operator_name"
-                type="text"
-              >
-            </td>
-          </tr>
-          <tr>
-            <th>Show Permit Data Vertical Wells ?</th>
-            <td style="text-align: center">
-              <input
-                v-model="markersVisible"
-                type="checkbox"
-              >
-            </td>
-          </tr>
-          <tr>
-            <th>Show Permit Data Horizontal Wells ?</th>
-            
-            <td style="text-align: center">
-              <input
-                v-model="polylineVisible"
-                type="checkbox"
-              >
-            </td>
-          </tr>
-          <tr>
-            <th>Show Well Data ?</th>
-            <td style="text-align: center">
-              <input
-                v-model="wellDataVisible"
-                type="checkbox"
-              >
-            </td>
-          </tr>
-          <tr>
-            <th>Show Survey Layers Data?</th>
-            
-            <td style="text-align: center">
-              <input
-                v-model="surveyLayerVisible"
-                type="checkbox"
-              >
-            </td>
-          </tr>
-            
-        </table>
-      
-    </div>
-    <div class="modal_action  row d-flex mt-5">
-      <button type="button"  class="col-2 btn btn-success mr-1" @click="$emit('apply', this.api_number, this.markersVisible, this.polylineVisible, this.operator_name , this.surveyLayerVisible , this.wellDataVisible)">Apply</button>
-      &nbsp;
-      &nbsp;
-      <button type="button" class="col-2 btn btn-danger ml-2" @click="$emit('cancel', close)" >Cancel</button>
+      <table>
+        <tr>
+          <th>Api Number:</th>
+          <td style="text-align: center">
+            <input v-model="api_number" type="text" />
+          </td>
+        </tr>
+        <tr>
+          <th>Operator Name:</th>
+          <td style="text-align: center">
+            <input v-model="operator_name" type="text" />
+          </td>
+        </tr>
+        <tr>
+          <th>Show Permit Data Vertical Wells ?</th>
+          <td style="text-align: center">
+            <input v-model="markersVisible" type="checkbox" />
+          </td>
+        </tr>
+        <tr>
+          <th>Show Permit Data Horizontal Wells ?</th>
 
+          <td style="text-align: center">
+            <input v-model="polylineVisible" type="checkbox" />
+          </td>
+        </tr>
+        <tr>
+          <th>Show Well Data ?</th>
+          <td style="text-align: center">
+            <input v-model="wellDataVisible" type="checkbox" />
+          </td>
+        </tr>
+        <tr>
+          <th>Show Survey Layers Data?</th>
+
+          <td style="text-align: center">
+            <input v-model="surveyLayerVisible" type="checkbox" />
+          </td>
+        </tr>
+      </table>
     </div>
-    <button class="modal__close" @click="close">
-     x
-    </button>
+    <div class="modal_action row d-flex mt-5">
+      <button
+        type="button"
+        class="col-2 btn btn-success mr-1"
+        @click="$emit('apply', this.api_number, this.markersVisible, this.polylineVisible, this.operator_name , this.surveyLayerVisible , this.wellDataVisible)"
+      >
+        Apply
+      </button>
+      &nbsp; &nbsp;
+      <button
+        type="button"
+        class="col-2 btn btn-danger ml-2"
+        @click="$emit('cancel', close)"
+      >
+        Cancel
+      </button>
+    </div>
+    <button class="modal__close" @click="close">x</button>
   </vue-final-modal>
 </template>
 
@@ -108,8 +96,8 @@ export default {
 <style scoped>
 ::v-deep .modal-container {
   display: flex;
-  width:40%;
-  left:30%;
+  width: 40%;
+  left: 30%;
   justify-content: center;
   align-items: center;
 }
@@ -141,10 +129,9 @@ export default {
   padding: 1rem 0 0;
 }
 .modal__close {
-  background:red;
+  background: red;
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
 }
 </style>
-
