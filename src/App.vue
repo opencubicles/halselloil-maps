@@ -1,4 +1,5 @@
 <template>
+<span>hellworldx</span>
   <div style="height: 100vh; width: 100vw">
     <l-map
       v-model="zoom"
