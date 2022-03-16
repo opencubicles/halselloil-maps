@@ -22,7 +22,7 @@
           <ul class="list-group list-group-horizontal">
             <li class="list-group-item">
               <img style="width: 20px" src="./assets/symnum_11.png" />: Permit
-              vertical Wells
+              vertical Well
             </li>
             <li class="list-group-item">Blue Line: Permit Horizontal Wells</li>
             <li class="list-group-item">
