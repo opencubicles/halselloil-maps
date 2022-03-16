@@ -1,5 +1,6 @@
 <template>
   <div style="height: 100vh; width: 100vw;">
+    
     <l-map  
       v-model="zoom"
       v-model:zoom="zoom"
@@ -10,111 +11,45 @@
         debounceMoveend: true
       }"
       @ready="refresh"
-      @update:center="centerUpdate" 
+      @update:center="centerUpdate"
+      @update:zoom="zoomUpdate"
     >
+
       <l-tile-layer
           :url="tileUrl"
           :options="tileOptions" >
       </l-tile-layer>
-      <l-control position="topright" >
-        <tile-panel :tiles="tiles"  @changeTile="changeTile">
+      <l-control position="topright">
+        <tile-panel :tiles="tiles" >
         </tile-panel>
       </l-control>
-
-      <l-control position="bottomleft">      
-      <div>
-      <ul class="list-group list-group-horizontal">
-
-      <li class="list-group-item"><img style="width:20px" src="./assets/symnum_11.png" />: Permit vertical Wells</li>
-      <li class="list-group-item">Blue Line: Permit Horizontal Wells</li>
-      <li class="list-group-item"><img style="width:20px" src="./assets/symnum_10.png" /> Survey layer Point</li>
-      <li class="list-group-item">Black Line: Survey layer LineString</li>
-      <li class="list-group-item">Red Block: Survey Block layer</li>
-      
-      <li class="list-group-item"><img style="width:20px" src="./assets/symnum_9.png" /> Well layer Point</li>
-      <li class="list-group-item">Orange Line: Well layer LineString</li>
-      <li class="list-group-item">Center: {{currentCenter}}</li>
-      </ul>
-      </div>
-      </l-control>
-
 
       <l-control position="bottomright">
 
         <filter-panel v-model="show" @apply="apply" @cancel="cancel" />
       
         <button type="button" class="btn btn-success"  @click="show = true">Filter Wells</button>
-
       </l-control>
+
+      
+
 
       <l-feature-group ref="features">
 
-        <l-popup :options="{autoPan: false}">
+        <l-popup >
           <popup-content :parsed_data="parsed_data">   
           </popup-content>
         </l-popup>
       </l-feature-group>
 
-      <l-feature-group ref="featureGroup" 
+      <LGeoJson v-if="geo_json_data"
+        :geojson="[geo_json_data]"
+      />
+      <l-feature-group ref="featureGroup" @ready="fitBounds" @layeradd="reFitBounds" @layerremove="reFitBounds" v-if="well_data_markers || well_data_polylines"
         >
 
-        <template v-if="geo_json_data && surveyLayerVisible">
-          <template v-for="(each_json,index) in geo_json_data" :key="index">
-            <l-marker v-if="each_json.type == 'Point'" 
-              :lat-lng="each_json.coordinates" @click="openPopUp(each_json.coordinates, each_json.properties)"
-              >
-              <l-icon :icon-url="iconUrl" :icon-size="iconSize" />
-              
-                  
-            </l-marker>
-            <l-polygon v-if="each_json.type == 'Polygon'" 
-              :lat-lngs="each_json.coordinates" color="red"
-            
-              @click="openPopUp(each_json.coordinates[0][0], each_json.properties)"
-              >
-                  
-            </l-polygon>
-            <l-polyline v-if="each_json.type == 'LineString'" 
-              :lat-lngs="each_json.coordinates" color="black" 
-              @click="openPopUp(each_json.coordinates[0], each_json.properties)"
-              >
-                  
-            </l-polyline>
-            
       
-          </template>
-
-        </template>
-
-        <template v-if="well_json_data  && wellDataVisible">
-          <template v-for="(each_json,index) in well_json_data" :key="index">
-            <l-marker v-if="each_json.type == 'Point'" 
-              :lat-lng="each_json.coordinates" color="orange" @click="openPopUp(each_json.coordinates, each_json.properties)"
-              >
-              <l-icon :icon-url="iconWellUrl" :icon-size="iconSize" />
-              
-                  
-            </l-marker>
-            <l-polygon v-if="each_json.type == 'Polygon'" 
-              :lat-lngs="each_json.coordinates" color="grey"
-            
-              @click="openPopUp(each_json.coordinates[0][0], each_json.properties)"
-              >
-                  
-            </l-polygon>
-            <l-polyline v-if="each_json.type == 'LineString'" 
-              :lat-lngs="each_json.coordinates" color="orange" 
-              @click="openPopUp(each_json.coordinates[0], each_json.properties)"
-              >
-                  
-            </l-polyline>
-            
-      
-          </template>
-
-        </template>
-        
-        <template v-if="well_data_polylines && polylineVisible">
+        <template v-if="well_data_polylines">
           
           <l-polyline v-for="(each_polyline,index) in resultQueryPolylines" :key="index" 
           
@@ -127,20 +62,21 @@
           </l-polyline>
         </template>
 
-        <template v-if="well_data_markers && markersVisible">
-            
+        <template v-if="well_data_markers">
+          
           <l-marker v-for="(each_polyline, index) in resultQueryMarkers"  :key="index" 
           
             :lat-lng="each_polyline.well_coordinates[0]"
             color="red"
             @click="openPopUp(each_polyline.well_coordinates[0], each_polyline.parsed_data)"
           >
-            <l-icon :icon-url="iconPermitMarkerImage" :icon-size="iconSize" />
+            <l-icon :icon-url="iconUrl" :icon-size="iconSize" />
             
           </l-marker>
         </template>
-      </l-feature-group >
-   
+      </l-feature-group>
+      
+      
     </l-map>
   </div>
 </template>
@@ -149,23 +85,23 @@
 import {
   LMap,
   LTileLayer,
-  LMarker,
-  LPopup,
-  LPolygon,
   LPolyline,
+  LMarker,
   LIcon,
+  LPopup,
+  LGeoJson,
   LFeatureGroup,
   LControl
-  
- } from "@vue-leaflet/vue-leaflet";
+} from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
-import iconImage from "@/assets/symnum_10.png";
-import iconPermitMarkerImage from "@/assets/symnum_11.png";
-import iconWellUrl from "@/assets/symnum_9.png";
 import FilterPanel from './components/FilterPanel';
+//import {geo_json_data} from "./assets/surv001Poly.js";
 
 import TilePanel from './components/TilePanel';
 import PopupContent from './components/PopupContent';
+
+//import { VueFinalModal, ModalsContainer } from 'vue-final-modal'
+//import { vfmPlugin } from 'vue-final-modal'
 
 import axios from 'axios';
 import Qs from 'qs';
@@ -173,29 +109,30 @@ import Qs from 'qs';
 export default {
   components: {
     LMap,
-    LIcon,
-    LTileLayer,
-    LMarker,
-    LControl,
-    LPolygon,
-    LPolyline,
     LPopup,
-    PopupContent,
-    LFeatureGroup,
+    LIcon,
+    LMarker,
+    LPolyline,
+    LTileLayer,
     FilterPanel,
-    TilePanel
+    LGeoJson,
+    TilePanel,
+    LFeatureGroup,
+    PopupContent,
+    LControl
+
   },
 
   data() {
     return {
-      zoom: 14,
+      zoom: 10,
       map:null,
       bounds: null,
       show: false,
       geo_json_data:{},
-      well_json_data:{},
       well_data_markers:[],
       well_data_polylines:[],
+      show_layers: false,
       currentCenter: [32.042356500077, -95.707149188658],
       iconWidth: 12.5,
       iconHeight: 20,
@@ -203,8 +140,6 @@ export default {
       operator_name: '',
       cancelSource: null,
       parsed_data: null,
-      wellDataVisible: true,
-      surveyLayerVisible: true,
       markersVisible: true,
       polylineVisible: true,
       without_bounds: false,
@@ -225,8 +160,24 @@ export default {
             maxZoom: 17,
             attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
           }
+        },
+        {
+          name: 'Stamen Design Toner',
+          url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.png',
+          options: {
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            subdomains: 'abcd',
+            minZoom: 0,
+            maxZoom: 20
+          }
+        },
+        {
+          name: 'ArcGIS World Topo Map',
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+          options: {
+            attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+          }
         }
-        
       ],
       
       currentTile: 0,
@@ -236,15 +187,8 @@ export default {
  
   computed: {
     iconUrl() {
-      return iconImage;
+      return `https://halselloil.s3.us-east-2.amazonaws.com/map_img/symnum_10.png`;
     },
-    iconPermitMarkerImage() {
-      return iconPermitMarkerImage;
-    },
-    iconWellUrl() {
-      return iconWellUrl;
-    },
-    
     iconSize() {
       return [this.iconWidth, this.iconHeight];
     },
@@ -267,59 +211,25 @@ export default {
         return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'Y'
       });
           
-    }
+    },
+  
   },
   methods: {
+
+    zoomUpdate(zoom) {
+      this.currentZoom = zoom;
+    },
+    centerUpdate(center) {
+      this.currentCenter = center;
+    },
     openPopUp (latLng, parsed_data) {
       
       this.parsed_data = parsed_data;
       this.$refs.features.leafletObject.openPopup(latLng);
     },
-   
-    centerUpdate(center) {
-      this.currentCenter = center;
-    },
-    reFitBounds() {
-      if(this.api_number != '' || this.operator_name != ''){
-        
-        //10334501
-        setTimeout(() => {
-          if(this.well_data_markers.length == 1 && (!this.well_data_polylines || this.well_data_polylines.length == 0)){
-            // changing the center to the current found marker's cordinates, we just cannot 
-            //fit bound for one marker as getBounds needs atleast two diffrerent cordinates
-            this.currentCenter = this.well_data_markers[0].well_coordinates[0];
-            this.currentZoom = 8;
-          
-          }else{
-            const new_bounds = this.$refs.featureGroup.leafletObject.getBounds();
-            
-            if(new_bounds.isValid()){
-               this.$refs.map.leafletObject.fitBounds(new_bounds);
-            
-            }
-
-          }
-
-          
-        }, 1000);
-
-        setTimeout(() => {
-          if(this.api_number != '' || this.markersVisible != 'false' || this.polylineVisible != 'false' || this.wellDataVisible != 'false' || this.surveyLayerVisible != 'false'){
-            this.without_bounds = false;
-            this.getWellData() 
-          }
-          
-          
-        }, 2500);
-        
-      }
-    },
-    apply(api_number , show_markers, show_polylines, operator_name , show_survey_layers, show_well_data) {
-
-      this.markersVisible = show_markers;
-      this.polylineVisible = show_polylines;
-      this.surveyLayerVisible = show_survey_layers;
-      this.wellDataVisible = show_well_data;
+    apply(api_number , show_markers, show_polylines, operator_name) {
+      this.show_markers = show_markers;
+      this.show_polylines = show_polylines;
       if(api_number != '' || operator_name != ''){
         this.without_bounds = true;
       
@@ -329,28 +239,62 @@ export default {
       }
       this.api_number = api_number
       this.operator_name = operator_name
-      this.show=false;
-      if(this.api_number != '' || this.operator_name != '' || this.markersVisible != 'false' || this.polylineVisible != 'false' || this.wellDataVisible != 'false' || this.surveyLayerVisible != 'false'){
-        this.getWellData() 
-      }
-
-      if(this.api_number != ''){
+      if(this.api_number != '' || this.operator_name != '' || this.show_markers != 'false' || this.show_polylines != 'false'){
+        this.getWellData()
         
-        this.reFitBounds()
-
       }
-
+      this.show = false
     },
     cancel(close) {
       // some code...
       close()
     },
-
-    changeTile(current_tile){
-      
-      this.currentTile = current_tile
-    },
+    fitBounds() {
     
+      setTimeout(() => {
+        if(this.well_data_markers.length == 1 &&  this.well_data_polylines.length == 0){
+          // changing the center to the current found marker's cordinates, we just cannot 
+          //fit bound for one marker as getBounds needs atleast two diffrerent cordinates
+          this.currentCenter = this.well_data_markers[0].well_coordinates[0];
+        }else{
+          const new_bounds = this.$refs.featureGroup.leafletObject.getBounds();
+        
+          if(new_bounds.isValid()){
+             this.$refs.map.leafletObject.fitBounds(new_bounds);
+          
+          }
+
+        }
+        
+        
+      }, 1000);
+    },
+    reFitBounds() {
+      console.log(this.api_number);
+      if(this.api_number != '' || this.operator_name != ''){
+        
+        //10334501
+        setTimeout(() => {
+          if(this.well_data_markers.length == 1 &&  this.well_data_polylines.length == 0){
+            // changing the center to the current found marker's cordinates, we just cannot 
+            //fit bound for one marker as getBounds needs atleast two diffrerent cordinates
+            this.currentCenter = this.well_data_markers[0].well_coordinates[0];
+            this.currentZoom = 8;
+          
+          }else{
+            const new_bounds = this.$refs.featureGroup.leafletObject.getBounds();
+            console.log(new_bounds);
+            if(new_bounds.isValid()){
+               this.$refs.map.leafletObject.fitBounds(new_bounds);
+            
+            }
+
+          }
+          
+          
+        }, 1000);
+      }
+    },
     getWellData(){
       var qs = Qs;
       var vm = this;
@@ -360,6 +304,9 @@ export default {
       var par = {};
 
       this.map = this.$refs.map.leafletObject;
+      this.bounds_cords = this.map.getBounds();
+
+      var bounds_cords = this.bounds_cords;
       if(this.without_bounds){
         if(this.operator_name != ''){
           par['operator_name'] = this.operator_name;
@@ -370,25 +317,17 @@ export default {
           par['api_number'] = this.api_number;
           
         }
-        par['show_markers'] = this.markersVisible;
+        par['show_markers'] = this.show_markers;
            
-        par['show_polylines'] = this.polylineVisible;
-        par['show_well_data'] = this.wellDataVisible;
-        par['show_survey_layers'] = this.surveyLayerVisible;
+        par['show_polylines'] = this.show_polylines;
 
         par['without_bounds'] = this.without_bounds;
       }
       else{
-
-        this.bounds_cords = this.map.getBounds();
-
-        var bounds_cords = this.bounds_cords;
-      
         var northWest = bounds_cords.getNorthWest(),
           northEast = bounds_cords.getNorthEast(),
           southWest = bounds_cords.getSouthWest(),
           southEast = bounds_cords.getSouthEast();
-
 
         par = {'north_west_lat' : northWest.lat ,
         'north_west_lng': northWest.lng,
@@ -403,18 +342,14 @@ export default {
         'south_east_lat': southEast.lat,
 
         'south_east_lng': southEast.lng,
-        'show_markers' : this.markersVisible,
-        'show_polylines' : this.polylineVisible,
-        'show_well_data' : this.wellDataVisible,
-        'show_survey_layers' : this.surveyLayerVisible,
-        'api_number'  : this.api_number,
+        'show_markers' : this.show_markers,
+        'show_polylines' : this.show_polylines,
+        
         'without_bounds' : false 
         }
 
       }
-      alert('sending  request');
-      console.log(par);
-        axios.get('https://halselloil.com/api_leaflet2.php', {
+        axios.get('https://dev-halselloil.opencubicles.com/leaflet-vue/api.php', {
         cancelToken: cancelSourceToken,
         params: par,
         paramsSerializer: params => {
@@ -426,44 +361,38 @@ export default {
       })
       .then(function (response) {
         vm.well_data_markers = null;
-        vm.well_data_json = null;
-        vm.well_data_polylines = null;
         vm.geo_json_data = null;
+        vm.well_data_polylines = null;
+        vm.show_layers = false;
         vm.cancelSource = null;
-
         if(response.data.result && response.data.result == 'error'){
-          alert('test');
+
+          vm.show_layers = false;
           
         }else{
-         console.log(response)  
-          if(response.data.parsed_data){
-            vm.well_data_markers = response.data.parsed_data.filter((item)=>{
-             return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'N'
-           });
-            vm.well_data_polylines = response.data.parsed_data.filter((item)=>{
-             return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'Y'
+          vm.well_data_markers = response.data.parsed_data.filter((item)=>{
+            return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'N'
           });
-            
-          }
+  
+          vm.well_data_polylines = response.data.parsed_data.filter((item)=>{
+            return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'Y'
+          });
 
-          var well_data_json = {};
-          well_data_json = response.data.well_data_json;
-
-          vm.well_json_data = well_data_json;
 
           var json_data = {};
-          json_data = response.data.geo_json;
+          json_data.type = 'FeatureCollection';
+          json_data.features = response.data.geo_json;
 
           vm.geo_json_data = json_data;
         
+          vm.show_layers = true;
           
         }
         
       })
       .catch(function (error) {
         vm.well_data = null;
-        vm.well_json_data = null;
-
+        vm.show_layers = false;
         console.log(error);
       })
       .then(function () {
@@ -477,6 +406,14 @@ export default {
         console.log('cancel request done');
       }
     },
+    filterWells(search){
+      this.api_number = search
+      this.getWellData()
+    },
+    changeTile(current_tile){
+
+      this.currentTile = current_tile
+    },
     
     refresh(){
         if(this.zoom >= 8){
@@ -487,7 +424,7 @@ export default {
               setTimeout(() => {
               vm_this_2.bounds = vm_this_2.map.getBounds();
                   vm_this_2.getWellData(vm_this_2.bounds);
-              }, 100)
+              }, 1000)
               
           });
 
@@ -496,15 +433,14 @@ export default {
               setTimeout(() => {
               vm_this_2.bounds = vm_this_2.map.getBounds();
                   vm_this_2.getWellData(vm_this_2.bounds);
-              }, 100)
+              }, 1000)
           });
       
 
         }else{
+          this.show_layers = false;
           this.well_data= null;
-          this.geo_json_data= null;
-          this.well_json_data= null;
-
+          
         }
         
  

@@ -44,7 +44,6 @@
         <filter-panel v-model="show" @apply="apply" @cancel="cancel" />
       
         <button type="button" class="btn btn-success"  @click="show = true">Filter Wells</button>
-
       </l-control>
 
       <l-feature-group ref="features">
@@ -196,6 +195,7 @@ export default {
       well_json_data:{},
       well_data_markers:[],
       well_data_polylines:[],
+      show_layers: false,
       currentCenter: [32.042356500077, -95.707149188658],
       iconWidth: 12.5,
       iconHeight: 20,
@@ -271,7 +271,7 @@ export default {
   },
   methods: {
     openPopUp (latLng, parsed_data) {
-      
+      console.log(parsed_data);  
       this.parsed_data = parsed_data;
       this.$refs.features.leafletObject.openPopup(latLng);
     },
@@ -279,43 +279,12 @@ export default {
     centerUpdate(center) {
       this.currentCenter = center;
     },
-    reFitBounds() {
-      if(this.api_number != '' || this.operator_name != ''){
-        
-        //10334501
-        setTimeout(() => {
-          if(this.well_data_markers.length == 1 && (!this.well_data_polylines || this.well_data_polylines.length == 0)){
-            // changing the center to the current found marker's cordinates, we just cannot 
-            //fit bound for one marker as getBounds needs atleast two diffrerent cordinates
-            this.currentCenter = this.well_data_markers[0].well_coordinates[0];
-            this.currentZoom = 8;
-          
-          }else{
-            const new_bounds = this.$refs.featureGroup.leafletObject.getBounds();
-            
-            if(new_bounds.isValid()){
-               this.$refs.map.leafletObject.fitBounds(new_bounds);
-            
-            }
-
-          }
-
-          
-        }, 1000);
-
-        setTimeout(() => {
-          if(this.api_number != '' || this.markersVisible != 'false' || this.polylineVisible != 'false' || this.wellDataVisible != 'false' || this.surveyLayerVisible != 'false'){
-            this.without_bounds = false;
-            this.getWellData() 
-          }
-          
-          
-        }, 2500);
-        
-      }
+    filterWells(search){
+      this.api_number = search
+      this.getWellData()
     },
     apply(api_number , show_markers, show_polylines, operator_name , show_survey_layers, show_well_data) {
-
+      
       this.markersVisible = show_markers;
       this.polylineVisible = show_polylines;
       this.surveyLayerVisible = show_survey_layers;
@@ -329,17 +298,11 @@ export default {
       }
       this.api_number = api_number
       this.operator_name = operator_name
-      this.show=false;
       if(this.api_number != '' || this.operator_name != '' || this.markersVisible != 'false' || this.polylineVisible != 'false' || this.wellDataVisible != 'false' || this.surveyLayerVisible != 'false'){
-        this.getWellData() 
-      }
-
-      if(this.api_number != ''){
+        this.getWellData()
         
-        this.reFitBounds()
-
       }
-
+      this.show = false
     },
     cancel(close) {
       // some code...
@@ -360,6 +323,9 @@ export default {
       var par = {};
 
       this.map = this.$refs.map.leafletObject;
+      this.bounds_cords = this.map.getBounds();
+
+      var bounds_cords = this.bounds_cords;
       if(this.without_bounds){
         if(this.operator_name != ''){
           par['operator_name'] = this.operator_name;
@@ -370,25 +336,17 @@ export default {
           par['api_number'] = this.api_number;
           
         }
-        par['show_markers'] = this.markersVisible;
+        par['show_markers'] = this.show_markers;
            
-        par['show_polylines'] = this.polylineVisible;
-        par['show_well_data'] = this.wellDataVisible;
-        par['show_survey_layers'] = this.surveyLayerVisible;
+        par['show_polylines'] = this.show_polylines;
 
         par['without_bounds'] = this.without_bounds;
       }
       else{
-
-        this.bounds_cords = this.map.getBounds();
-
-        var bounds_cords = this.bounds_cords;
-      
         var northWest = bounds_cords.getNorthWest(),
           northEast = bounds_cords.getNorthEast(),
           southWest = bounds_cords.getSouthWest(),
           southEast = bounds_cords.getSouthEast();
-
 
         par = {'north_west_lat' : northWest.lat ,
         'north_west_lng': northWest.lng,
@@ -403,17 +361,13 @@ export default {
         'south_east_lat': southEast.lat,
 
         'south_east_lng': southEast.lng,
-        'show_markers' : this.markersVisible,
-        'show_polylines' : this.polylineVisible,
-        'show_well_data' : this.wellDataVisible,
-        'show_survey_layers' : this.surveyLayerVisible,
-        'api_number'  : this.api_number,
+        'show_markers' : this.show_markers,
+        'show_polylines' : this.show_polylines,
+        
         'without_bounds' : false 
         }
 
       }
-      alert('sending  request');
-      console.log(par);
         axios.get('https://halselloil.com/api_leaflet2.php', {
         cancelToken: cancelSourceToken,
         params: par,
@@ -426,16 +380,18 @@ export default {
       })
       .then(function (response) {
         vm.well_data_markers = null;
-        vm.well_data_json = null;
-        vm.well_data_polylines = null;
         vm.geo_json_data = null;
+        vm.well_json_data = null;
+        vm.well_data_polylines = null;
+        vm.show_layers = false;
         vm.cancelSource = null;
 
         if(response.data.result && response.data.result == 'error'){
-          alert('test');
+
+          vm.show_layers = false;
           
         }else{
-         console.log(response)  
+           
           if(response.data.parsed_data){
             vm.well_data_markers = response.data.parsed_data.filter((item)=>{
              return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'N'
@@ -456,12 +412,14 @@ export default {
 
           vm.geo_json_data = json_data;
         
+          vm.show_layers = true;
           
         }
         
       })
       .catch(function (error) {
         vm.well_data = null;
+        vm.show_layers = false;
         vm.well_json_data = null;
 
         console.log(error);
@@ -501,6 +459,7 @@ export default {
       
 
         }else{
+          this.show_layers = false;
           this.well_data= null;
           this.geo_json_data= null;
           this.well_json_data= null;
