@@ -1,6 +1,4 @@
-# demo-project
-
-Remember to change the version of `@vue-leaflet/vue-leaflet` in `package.json`
+Halsell Map Project
 
 ## Project setup
 
