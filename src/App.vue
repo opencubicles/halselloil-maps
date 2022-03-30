@@ -1,6 +1,7 @@
 <template>
   <div style="height: 100vh; width: 100vw">
     <l-map
+      
       v-model="zoom"
       v-model:zoom="zoom"
       :center="currentCenter"
@@ -11,8 +12,11 @@
       }"
       @ready="refresh"
       @update:center="centerUpdate"
+
     >
+      
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
+
       <l-control position="topright">
         <tile-panel :tiles="tiles" @changeTile="changeTile"> </tile-panel>
       </l-control>
@@ -20,23 +24,30 @@
       <l-control position="bottomleft">
         <div>
           <ul class="list-group list-group-horizontal">
-            <li class="list-group-item">
-              <img style="width: 20px" src="./assets/symnum_11.png" />: Permit
-              vertical Well
-            </li>
-            <li class="list-group-item">Blue Line: Permit Horizontal Well</li>
+            
             <li class="list-group-item">
               <img style="width: 20px" src="./assets/symnum_10.png" /> Survey
-              layer Point
+              layer Abspt
+              <img style="width: 20px" v-show="showSurveyAbsptLoader" src="./assets/loader.png" />
+
             </li>
-            <li class="list-group-item">Black Line: Survey layer LineString</li>
-            <li class="list-group-item">Red Block: Survey Block layer</li>
+            <li class="list-group-item">Black Line: Survey layer LineString
+            <img style="width: 20px" v-show="showSurveyLDataLoader" src="./assets/loader.png" />
+
+            </li>
+            <li class="list-group-item">Red Block: Survey Block layer <img style="width: 20px" v-show="showSurveyPDataLoader" src="./assets/loader.png" /></li>
 
             <li class="list-group-item">
               <img style="width: 20px" src="./assets/symnum_9.png" /> Well layer
               Point
+              <img style="width: 20px" v-show="showWellPointsDataLoader" src="./assets/loader.png" />
+
             </li>
-            <li class="list-group-item">Orange Line: Well layer LineString</li>
+            <li class="list-group-item">Purple Line: Well layer LineString
+            <img style="width: 20px" v-show="showWellLinesDataLoader" src="./assets/loader.png" />
+
+            </li>
+
             <li class="list-group-item">Center: {{currentCenter}}</li>
           </ul>
         </div>
@@ -55,84 +66,70 @@
           <popup-content :parsed_data="parsed_data"> </popup-content>
         </l-popup>
       </l-feature-group>
-
       <l-feature-group ref="featureGroup">
-        <template v-if="geo_json_data && surveyLayerVisible">
-          <template v-for="(each_json,index) in geo_json_data" :key="index">
-            <l-marker
-              v-if="each_json.type == 'Point'"
-              :lat-lng="each_json.coordinates"
-              @click="openPopUp(each_json.coordinates, each_json.properties)"
+        <template v-if="survey_abspt_points && show_survey_abspt">
+          
+              <l-marker v-for="(each_surveypoint,index) in survey_abspt_points" :key="index"
+                
+                :lat-lng="each_surveypoint._source.geometry.coordinates"
+
+                @click="openPopUp(each_surveypoint._source.geometry.coordinates, 
+                each_surveypoint._source.properties)"
+              >
+                <l-icon :icon-url="iconUrl" :icon-size="iconSize" />
+              </l-marker>
+        </template>
+        <template v-if="well_points_data && show_well_points_data">
+          
+              <l-marker v-for="(each_wellpoint,index) in well_points_data" :key="index"
+                
+                :lat-lng="each_wellpoint._source.geometry.coordinates"
+
+                @click="openPopUp(each_wellpoint._source.geometry.coordinates, 
+                each_wellpoint._source.properties)"
+              >
+                <l-icon :icon-url="iconWellUrl" :icon-size="iconSize" />
+              </l-marker>
+        </template>
+
+        <template v-if="well_lines_data && show_well_lines_data">
+          
+            <l-polyline
+
+              v-for="(each_wellline,index) in well_lines_data" :key="index"
+              :lat-lngs="each_wellline._source.geometry.coordinates"
+              color="purple"
+              @click="openPopUp(each_wellline._source.geometry.coordinates[0], each_wellline._source.properties)"
             >
-              <l-icon :icon-url="iconUrl" :icon-size="iconSize" />
-            </l-marker>
+            </l-polyline>
+              
+        </template>
+        
+        <template v-if="survey_p_data && show_survey_p_data">
+          
             <l-polygon
-              v-if="each_json.type == 'Polygon'"
-              :lat-lngs="each_json.coordinates"
+              v-for="(each_survey_p_data,index) in survey_p_data" :key="index"
+              :lat-lngs="each_survey_p_data._source.geometry.coordinates"
               color="red"
-              @click="openPopUp(each_json.coordinates[0][0], each_json.properties)"
+              @click="openPopUp(each_survey_p_data._source.geometry.coordinates[0][0], each_survey_p_data._source.properties)"
             >
             </l-polygon>
+              
+        </template>
+        <template v-if="survey_l_data && show_survey_l_data">
+          
             <l-polyline
-              v-if="each_json.type == 'LineString'"
-              :lat-lngs="each_json.coordinates"
+
+              v-for="(each_survey_l_data,index) in survey_l_data" :key="index"
+              :lat-lngs="each_survey_l_data._source.geometry.coordinates"
               color="black"
-              @click="openPopUp(each_json.coordinates[0], each_json.properties)"
+              @click="openPopUp(each_survey_l_data._source.geometry.coordinates[0], each_survey_l_data._source.properties)"
             >
             </l-polyline>
-          </template>
-        </template>
-
-        <template v-if="well_json_data  && wellDataVisible">
-          <template v-for="(each_json,index) in well_json_data" :key="index">
-            <l-marker
-              v-if="each_json.type == 'Point'"
-              :lat-lng="each_json.coordinates"
-              color="orange"
-              @click="openPopUp(each_json.coordinates, each_json.properties)"
-            >
-              <l-icon :icon-url="iconWellUrl" :icon-size="iconSize" />
-            </l-marker>
-            <l-polygon
-              v-if="each_json.type == 'Polygon'"
-              :lat-lngs="each_json.coordinates"
-              color="grey"
-              @click="openPopUp(each_json.coordinates[0][0], each_json.properties)"
-            >
-            </l-polygon>
-            <l-polyline
-              v-if="each_json.type == 'LineString'"
-              :lat-lngs="each_json.coordinates"
-              color="orange"
-              @click="openPopUp(each_json.coordinates[0], each_json.properties)"
-            >
-            </l-polyline>
-          </template>
-        </template>
-
-        <template v-if="well_data_polylines && polylineVisible">
-          <l-polyline
-            v-for="(each_polyline,index) in resultQueryPolylines"
-            :key="index"
-            :lat-lngs="each_polyline.well_coordinates"
-            color="blue"
-            @click="openPopUp(each_polyline.well_coordinates[0], each_polyline.parsed_data)"
-          >
-          </l-polyline>
-        </template>
-
-        <template v-if="well_data_markers && markersVisible">
-          <l-marker
-            v-for="(each_polyline, index) in resultQueryMarkers"
-            :key="index"
-            :lat-lng="each_polyline.well_coordinates[0]"
-            color="red"
-            @click="openPopUp(each_polyline.well_coordinates[0], each_polyline.parsed_data)"
-          >
-            <l-icon :icon-url="iconPermitMarkerImage" :icon-size="iconSize" />
-          </l-marker>
+              
         </template>
       </l-feature-group>
+
     </l-map>
   </div>
 </template>
@@ -168,9 +165,9 @@ export default {
     LIcon,
     LTileLayer,
     LMarker,
-    LControl,
     LPolygon,
-    LPolyline,
+    LPolyline,  
+    LControl,
     LPopup,
     PopupContent,
     LFeatureGroup,
@@ -180,28 +177,44 @@ export default {
 
   data() {
     return {
-      zoom: 14,
+      zoom: 12,
       map:null,
       bounds: null,
       show: false,
-      geo_json_data:{},
-      well_json_data:{},
-      well_data_markers:[],
-      well_data_polylines:[],
-      currentCenter: [32.042356500077, -95.707149188658],
+      show_survey_abspt: true,
+      show_survey_p_data: true,
+      show_survey_l_data: true,
+
+      show_well_points_data: true,
+      show_well_lines_data: true,
+      
+      survey_abspt_points: {},
+      survey_p_data: {},
+      survey_l_data: {},
+      well_points_data: {},
+      well_lines_data: {},
+      currentCenter: [30.099098, -103.660126],
       iconWidth: 12.5,
       iconHeight: 20,
       api_number:'',
       operator_name: '',
-      cancelSource: null,
-      parsed_data: null,
-      wellDataVisible: true,
-      surveyLayerVisible: true,
-      markersVisible: true,
-      polylineVisible: true,
-      without_bounds: false,
-      refresh_only_layers: false,
+      cancelSourceSurveyAbspt: null,
+      showSurveyAbsptLoader: false,
 
+      cancelSourceSurveyPData: null,
+      showSurveyPDataLoader: false,
+
+      cancelSourceSurveyLData: null,
+      showSurveyLDataLoader: false,
+
+      cancelSourceWellPointsData: null,
+      showWellPointsDataLoader: false,
+
+      cancelSourceWellLinesLData: null,
+      showWellLinesDataLoader: false,
+      
+      
+      
       tiles: [
         {
           name: 'OpenStreetMap',
@@ -247,20 +260,7 @@ export default {
     tileOptions () {
       return this.tiles[this.currentTile].options
     },
-    resultQueryMarkers(){
-
-      return this.well_data_markers.filter((item)=>{
-        return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'N'
-      });
-
-    },
-    resultQueryPolylines(){
-
-      return this.well_data_polylines.filter((item)=>{
-        return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'Y'
-      });
-
-    }
+    
   },
   methods: {
     openPopUp (latLng, parsed_data) {
@@ -272,70 +272,8 @@ export default {
     centerUpdate(center) {
       this.currentCenter = center;
     },
-    reFitBounds() {
-      if(this.api_number != '' || this.operator_name != ''){
+    
 
-        //10334501
-        setTimeout(() => {
-          if(this.well_data_markers.length == 1 && (!this.well_data_polylines || this.well_data_polylines.length == 0)){
-            // changing the center to the current found marker's cordinates, we just cannot
-            //fit bound for one marker as getBounds needs atleast two diffrerent cordinates
-            this.currentCenter = this.well_data_markers[0].well_coordinates[0];
-            this.currentZoom = 8;
-
-          }else{
-            const new_bounds = this.$refs.featureGroup.leafletObject.getBounds();
-
-            if(new_bounds.isValid()){
-               this.$refs.map.leafletObject.fitBounds(new_bounds);
-
-            }
-
-          }
-
-
-        }, 1000);
-
-        setTimeout(() => {
-          if(this.api_number != '' || this.markersVisible != 'false' || this.polylineVisible != 'false' || this.wellDataVisible != 'false' || this.surveyLayerVisible != 'false'){
-            this.without_bounds = false;
-            this.refresh_only_layers = true;
-            this.getWellData()
-          }
-
-
-        }, 2500);
-
-      }
-    },
-    apply(api_number , show_markers, show_polylines, operator_name , show_survey_layers, show_well_data) {
-
-      this.markersVisible = show_markers;
-      this.polylineVisible = show_polylines;
-      this.surveyLayerVisible = show_survey_layers;
-      this.wellDataVisible = show_well_data;
-      if(api_number != '' || operator_name != ''){
-        this.without_bounds = true;
-
-      }else{
-        this.without_bounds = false;
-
-      }
-      this.api_number = api_number
-      this.operator_name = operator_name
-      this.refresh_only_layers = false;
-      this.show=false;
-      if(this.api_number != '' || this.operator_name != '' || this.markersVisible != 'false' || this.polylineVisible != 'false' || this.wellDataVisible != 'false' || this.surveyLayerVisible != 'false'){
-        this.getWellData()
-      }
-
-      if(this.api_number != ''){
-
-        this.reFitBounds()
-
-      }
-
-    },
     cancel(close) {
       // some code...
       close()
@@ -345,74 +283,103 @@ export default {
 
       this.currentTile = current_tile
     },
+    
+      
+    refresh(){
 
-    getWellData(){
-      var qs = Qs;
-      var vm = this;
-      this.cancelSearch();
-      this.cancelSource = axios.CancelToken.source();
-      var cancelSourceToken = this.cancelSource.token;
-      var par = {};
+        if(this.zoom >= 8){
+          this.callDesiredAPIs();
+          
+          var vm_this = this;
+          
+          this.map.on('dragend', () => {
+              
+              setTimeout(() => {
+                vm_this.callDesiredAPIs();
 
-      this.map = this.$refs.map.leafletObject;
-      if(this.without_bounds){
-        if(this.operator_name != ''){
-          par['operator_name'] = this.operator_name;
+              }, 100)
+
+          });
+
+          this.map.on('zoomend', () => {
+            
+              setTimeout(() => {
+                vm_this.callDesiredAPIs();
+
+              }, 100)
+          });
 
         }
 
-        if(this.api_number != ''){
-          par['api_number'] = this.api_number;
 
-        }
-        par['show_markers'] = this.markersVisible;
-
-        par['show_polylines'] = this.polylineVisible;
-        par['show_well_data'] = this.wellDataVisible;
-        par['show_survey_layers'] = this.surveyLayerVisible;
-
-        par['without_bounds'] = this.without_bounds;
-        par['refresh_only_layers'] = this.refresh_only_layers;
-        
+    },
+    cancelSearchSurveyAbspt () {
+      if (this.cancelSurveySource) {
+        this.cancelSurveySource.cancel('Start new search, stop active search');
+        console.log('cancel request done');
       }
-      else{
+    },
 
-        this.bounds_cords = this.map.getBounds();
+    cancelSearchSurveyPData () {
+      if (this.cancelSurveySourcePData) {
+        this.cancelSurveySourcePData.cancel('Start new search, stop active search');
+        console.log('cancel request done');
+      }
+    },
 
-        var bounds_cords = this.bounds_cords;
+    cancelSearchSurveyLData () {
+      if (this.cancelSurveySourceLData) {
+        this.cancelSurveySourceLData.cancel('Start new search, stop active search');
+        console.log('cancel request done');
+      }
+    },
 
-        var northWest = bounds_cords.getNorthWest(),
-          northEast = bounds_cords.getNorthEast(),
-          southWest = bounds_cords.getSouthWest(),
+    cancelSearchWellLinesData () {
+      if (this.cancelSourceWellLines) {
+        this.cancelSourceWellLines.cancel('Start new search, stop active search');
+        console.log('cancel request done');
+      }
+    },
+
+    cancelSearchWellPointsData () {
+      if (this.cancelSurveySourceLData) {
+        this.cancelSourceWellPoints.cancel('Start new search, stop active search');
+        console.log('cancel request done');
+      }
+    },
+
+    callDesiredAPIs(){
+      this.map = this.$refs.map.leafletObject;
+      this.bounds_cords = this.map.getBounds();
+      var bounds_cords = this.bounds_cords;
+
+      var northWest = bounds_cords.getNorthWest(),
           southEast = bounds_cords.getSouthEast();
 
-
-        par = {'north_west_lat' : northWest.lat ,
+      var qs = Qs;
+      var vm = this;
+      var par = {'north_west_lat' : northWest.lat ,
         'north_west_lng': northWest.lng,
-        'north_east_lat': northEast.lat,
-
-        'north_east_lng': northEast.lng,
-
-        'south_west_lat': southWest.lat,
-
-        'south_west_lng': southWest.lng,
-
         'south_east_lat': southEast.lat,
-
         'south_east_lng': southEast.lng,
-        'show_markers' : this.markersVisible,
-        'show_polylines' : this.polylineVisible,
-        'show_well_data' : this.wellDataVisible,
-        'show_survey_layers' : this.surveyLayerVisible,
-        'api_number'  : this.api_number,
-        'without_bounds' : false,
-        'refresh_only_layers' : this.refresh_only_layers,
-        }
-
+        'api_number'  : this.api_number
       }
-      console.log(par);
-        axios.get('https://halselloil.com/api_leaflet2.php', {
-        cancelToken: cancelSourceToken,
+      this.survey_abspt_points=null;
+      this.survey_p_data=null;
+      this.survey_l_data=null;
+      this.well_points_data=null;
+      this.well_lines_data=null;
+      
+      if(this.show_survey_abspt){
+        par['show_survey_abspt'] = this.show_survey_abspt;
+        this.cancelSearchSurveyAbspt();
+        this.cancelSourceSurveyAbspt = axios.CancelToken.source();
+
+        var cancelSourceTokenSurveyAbspt = this.cancelSourceSurveyAbspt.token;
+      
+        this.showSurveyAbsptLoader = true;
+        axios.get(process.env.VUE_APP_URL, {
+        cancelToken: cancelSourceTokenSurveyAbspt,
         params: par,
         paramsSerializer: params => {
 
@@ -420,101 +387,259 @@ export default {
 
         }
 
-      })
-      .then(function (response) {
-        if(!vm.refresh_only_layers){
-          vm.well_data_markers = null;
-          vm.well_data_polylines = null;
+        })
+        .then(function (response) {
         
-        }
         vm.well_data_json = null;
         vm.geo_json_data = null;
-        vm.cancelSource = null;
+        vm.cancelSourceSurveyAbspt = null;
 
         if(response.data.result && response.data.result == 'error'){
           console.log('error')
 
         }else{
-         console.log(response)
-          if(!vm.refresh_only_layers){
-            if(response.data.parsed_data){
-              vm.well_data_markers = response.data.parsed_data.filter((item)=>{
-               return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'N'
-              });
-              vm.well_data_polylines = response.data.parsed_data.filter((item)=>{
-               return item.parsed_data['DA-HORIZONTAL-WELL-FLAG']  == 'Y'
-              });
-            }
-
-          }
-
-          var well_data_json = {};
-          well_data_json = response.data.well_data_json;
-
-          vm.well_json_data = well_data_json;
-
+          
           var json_data = {};
-          json_data = response.data.geo_json;
+          json_data = response.data.survey_abspt_points;
+          vm.survey_abspt_points = json_data;
 
-          vm.geo_json_data = json_data;
+
+        }
+
+        })
+        .catch(function (error) {
+          vm.well_data = null;
+          vm.well_json_data = null;
+
+          console.log(error);
+        })
+        .then(function () {
+          // always executed
+          vm.showSurveyAbsptLoader= false;
+
+        });
+      }
+
+      if(this.show_survey_p_data){
+      par = {'north_west_lat' : northWest.lat ,
+        'north_west_lng': northWest.lng,
+        'south_east_lat': southEast.lat,
+        'south_east_lng': southEast.lng,
+        'api_number'  : this.api_number
+        }
+        par['show_survey_p_data'] = this.show_survey_p_data;
+        this.cancelSearchSurveyPData();
+        this.cancelSourceSurveyPData = axios.CancelToken.source();
+
+        var cancelSourceTokenSurveyPData = this.cancelSourceSurveyPData.token;
+      
+        this.showSurveyPDataLoader = true;
+        axios.get(process.env.VUE_APP_URL, {
+        cancelToken: cancelSourceTokenSurveyPData,
+        params: par,
+        paramsSerializer: params => {
+
+          return qs.stringify(params)
+
+        }
+
+        })
+        .then(function (response) {
+        
+        vm.cancelSourceSurveyPData = null;
+
+        if(response.data.result && response.data.result == 'error'){
+          console.log('error')
+
+        }else{
+          
+          var json_data = {};
+          json_data = response.data.survey_p_data;
+          console.log(response.data.survey_p_data);
+
+          vm.survey_p_data = json_data;
 
 
         }
 
       })
       .catch(function (error) {
-        vm.well_data = null;
-        vm.well_json_data = null;
+        
 
         console.log(error);
       })
       .then(function () {
         // always executed
+        vm.showSurveyPDataLoader = false;
 
       });
-    },
-    cancelSearch () {
-      if (this.cancelSource) {
-        this.cancelSource.cancel('Start new search, stop active search');
-        console.log('cancel request done');
       }
-    },
 
-    refresh(){
-        if(this.zoom >= 8){
-          this.getWellData(this.bounds);
-          var vm_this = this;
-          this.map.on('dragend', () => {
-              var vm_this_2 = vm_this;
-              setTimeout(() => {
-                vm_this.refresh_only_layers = false;
-                vm_this_2.bounds = vm_this_2.map.getBounds();
-                  vm_this_2.getWellData(vm_this_2.bounds);
+      if(this.show_survey_l_data){
+        par = {'north_west_lat' : northWest.lat ,
+          'north_west_lng': northWest.lng,
+          'south_east_lat': southEast.lat,
+          'south_east_lng': southEast.lng,
+          'api_number'  : this.api_number
+          }
+          par['show_survey_l_data'] = this.show_survey_l_data;
+          this.cancelSearchSurveyLData();
+          this.cancelSourceSurveyLData = axios.CancelToken.source();
 
-              }, 100)
+          var cancelSourceTokenSurveyLData = this.cancelSourceSurveyLData.token;
+        
+          this.showSurveyLDataLoader = true;
+          axios.get(process.env.VUE_APP_URL, {
+          cancelToken: cancelSourceTokenSurveyLData,
+          params: par,
+          paramsSerializer: params => {
 
-          });
+            return qs.stringify(params)
 
-          this.map.on('zoomend', () => {
-              var vm_this_2 = vm_this;
-              setTimeout(() => {
-                vm_this.refresh_only_layers = false;
-              vm_this_2.bounds = vm_this_2.map.getBounds();
-                  vm_this_2.getWellData(vm_this_2.bounds);
+          }
 
-              }, 100)
-          });
+          })
+          .then(function (response) {
+          
+          vm.cancelSourceSurveyLData = null;
+
+          if(response.data.result && response.data.result == 'error'){
+            console.log('error')
+
+          }else{
+            
+            var json_data = {};
+            json_data = response.data.survey_l_data;
+            console.log(response.data.survey_l_data);
+          
+            vm.survey_l_data = json_data;
 
 
-        }else{
-          this.well_data= null;
-          this.geo_json_data= null;
-          this.well_json_data= null;
+          }
 
-        }
+        })
+        .catch(function (error) {
+          
+
+          console.log(error);
+        })
+        .then(function () {
+          // always executed
+          vm.showSurveyLDataLoader = false;
+
+        });
+      }
+
+      if(this.show_well_lines_data){
+        par = {'north_west_lat' : northWest.lat ,
+          'north_west_lng': northWest.lng,
+          'south_east_lat': southEast.lat,
+          'south_east_lng': southEast.lng,
+          'api_number'  : this.api_number
+          }
+          par['show_well_lines_data'] = this.show_well_lines_data;
+          this.cancelSearchWellLinesData();
+          this.cancelSourceWellLinesData = axios.CancelToken.source();
+
+          var cancelSourceTokenWellLinesData = this.cancelSourceWellLinesData.token;
+        
+          this.showWellLinesDataLoader = true;
+          axios.get(process.env.VUE_APP_URL, {
+          cancelToken: cancelSourceTokenWellLinesData,
+          params: par,
+          paramsSerializer: params => {
+
+            return qs.stringify(params)
+
+          }
+
+          })
+          .then(function (response) {
+          
+          vm.cancelSourceWellPointsData = null;
+
+          if(response.data.result && response.data.result == 'error'){
+            console.log('error')
+
+          }else{
+            
+            var json_data = {};
+            json_data = response.data.well_lines_data;
+            console.log(response.data.well_lines_data);
+          
+            vm.well_lines_data = json_data;
 
 
-    },
+          }
+
+        })
+        .catch(function (error) {
+          
+
+          console.log(error);
+        })
+        .then(function () {
+          // always executed
+          vm.showWellLinesDataLoader = false;
+
+        });
+      }
+
+      if(this.show_well_points_data){
+        par = {'north_west_lat' : northWest.lat ,
+          'north_west_lng': northWest.lng,
+          'south_east_lat': southEast.lat,
+          'south_east_lng': southEast.lng,
+          'api_number'  : this.api_number
+          }
+          par['show_well_points_data'] = this.show_well_points_data;
+          this.cancelSearchWellPointsData();
+          this.cancelSourceWellPointsData = axios.CancelToken.source();
+
+          var cancelSourceTokenWellPointsData = this.cancelSourceWellPointsData.token;
+        
+          this.showWellPointsDataLoader = true;
+          axios.get(process.env.VUE_APP_URL, {
+          cancelToken: cancelSourceTokenWellPointsData,
+          params: par,
+          paramsSerializer: params => {
+
+            return qs.stringify(params)
+
+          }
+
+          })
+          .then(function (response) {
+          
+          vm.cancelSourceWellPointsData = null;
+
+          if(response.data.result && response.data.result == 'error'){
+            console.log('error')
+
+          }else{
+            
+            var json_data = {};
+            json_data = response.data.well_points_data;
+            console.log(response.data.well_points_data);
+          
+            vm.well_points_data = json_data;
+
+
+          }
+
+        })
+        .catch(function (error) {
+          
+
+          console.log(error);
+        })
+        .then(function () {
+          // always executed
+          vm.showWellPointsDataLoader = false;
+
+        });
+      }
+    }
 
   },
 };
