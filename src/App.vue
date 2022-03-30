@@ -193,7 +193,7 @@ export default {
       survey_l_data: {},
       well_points_data: {},
       well_lines_data: {},
-      currentCenter: [30.099098, -103.660126],
+      currentCenter: [30.091375, -104.139748],
       iconWidth: 12.5,
       iconHeight: 20,
       api_number:'',
