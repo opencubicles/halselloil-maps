@@ -8,8 +8,11 @@
       ref="map"
       :options="{
         keyboard: true,
-        debounceMoveend: true
+        debounceMoveend: true,
+        preferCanvas: true
+
       }"
+
       @ready="refresh"
       @update:center="centerUpdate"
 
