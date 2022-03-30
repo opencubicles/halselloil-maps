@@ -1,5 +1,4 @@
 <template>
-<span>hellworldxxx</span>
   <div style="height: 100vh; width: 100vw">
     <l-map
       
