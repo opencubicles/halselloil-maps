@@ -177,7 +177,7 @@ export default {
 
   data() {
     return {
-      zoom: 12,
+      zoom: 14,
       map:null,
       bounds: null,
       show: false,
@@ -378,7 +378,7 @@ export default {
         var cancelSourceTokenSurveyAbspt = this.cancelSourceSurveyAbspt.token;
       
         this.showSurveyAbsptLoader = true;
-        axios.get(process.env.VUE_APP_URL, {
+        axios.get("https://dev-halselloil.opencubicles.com/search_data/test_search2.php", {
         cancelToken: cancelSourceTokenSurveyAbspt,
         params: par,
         paramsSerializer: params => {
@@ -434,7 +434,7 @@ export default {
         var cancelSourceTokenSurveyPData = this.cancelSourceSurveyPData.token;
       
         this.showSurveyPDataLoader = true;
-        axios.get(process.env.VUE_APP_URL, {
+        axios.get("https://dev-halselloil.opencubicles.com/search_data/test_search2.php", {
         cancelToken: cancelSourceTokenSurveyPData,
         params: par,
         paramsSerializer: params => {
@@ -489,7 +489,7 @@ export default {
           var cancelSourceTokenSurveyLData = this.cancelSourceSurveyLData.token;
         
           this.showSurveyLDataLoader = true;
-          axios.get(process.env.VUE_APP_URL, {
+          axios.get("https://dev-halselloil.opencubicles.com/search_data/test_search2.php", {
           cancelToken: cancelSourceTokenSurveyLData,
           params: par,
           paramsSerializer: params => {
@@ -544,7 +544,7 @@ export default {
           var cancelSourceTokenWellLinesData = this.cancelSourceWellLinesData.token;
         
           this.showWellLinesDataLoader = true;
-          axios.get(process.env.VUE_APP_URL, {
+          axios.get("https://dev-halselloil.opencubicles.com/search_data/test_search2.php", {
           cancelToken: cancelSourceTokenWellLinesData,
           params: par,
           paramsSerializer: params => {
@@ -599,7 +599,7 @@ export default {
           var cancelSourceTokenWellPointsData = this.cancelSourceWellPointsData.token;
         
           this.showWellPointsDataLoader = true;
-          axios.get(process.env.VUE_APP_URL, {
+          axios.get("https://dev-halselloil.opencubicles.com/search_data/test_search2.php", {
           cancelToken: cancelSourceTokenWellPointsData,
           params: par,
           paramsSerializer: params => {
