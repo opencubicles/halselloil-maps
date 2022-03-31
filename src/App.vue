@@ -93,8 +93,8 @@
       <l-feature-group ref="featureGroup">
         <template v-if="survey_abspt_points && show_survey_abspt">
           <l-marker
-            v-for="(each_surveypoint, index) in survey_abspt_points"
-            :key="index"
+            v-for="(each_surveypoint) in survey_abspt_points"
+            :key="each_surveypoint._id"
             :lat-lng="each_surveypoint._source.geometry.coordinates"
             @click="
               openPopUp(
@@ -108,8 +108,8 @@
         </template>
         <template v-if="well_points_data && show_well_points_data">
           <l-marker
-            v-for="(each_wellpoint, index) in well_points_data"
-            :key="index"
+            v-for="(each_wellpoint) in well_points_data"
+            :key="each_wellpoint._id"
             :lat-lng="each_wellpoint._source.geometry.coordinates"
             @click="
               openPopUp(
@@ -121,11 +121,11 @@
             <l-icon :icon-url="iconWellUrl" :icon-size="iconSize" />
           </l-marker>
         </template>
-
-        <template v-if="well_lines_data && show_well_lines_data">
+        <template v-if="well_lines_data && show_well_lines_data"><!--smoothFactor incrases, performance increases, detail decreases-->
           <l-polyline
-            v-for="(each_wellline, index) in well_lines_data"
-            :key="index"
+              smoothFactor=8
+            v-for="(each_wellline) in well_lines_data"
+            :key="each_wellline._id"
             :lat-lngs="each_wellline._source.geometry.coordinates"
             color="purple"
             @click="
@@ -140,8 +140,8 @@
 
         <template v-if="survey_p_data && show_survey_p_data">
           <l-polygon
-            v-for="(each_survey_p_data, index) in survey_p_data"
-            :key="index"
+            v-for="(each_survey_p_data) in survey_p_data"
+            :key="each_survey_p_data._id"
             :lat-lngs="each_survey_p_data._source.geometry.coordinates"
             color="red"
           >
@@ -149,8 +149,8 @@
         </template>
         <template v-if="survey_l_data && show_survey_l_data">
           <l-polyline
-            v-for="(each_survey_l_data, index) in survey_l_data"
-            :key="index"
+            v-for="(each_survey_l_data) in survey_l_data"
+            :key="each_survey_l_data._id"
             :lat-lngs="each_survey_l_data._source.geometry.coordinates"
             color="black"
             @click="
@@ -188,7 +188,7 @@ import Loader from "./components/Loader";
 
 import TilePanel from "./components/TilePanel";
 import PopupContent from "./components/PopupContent";
-
+import debounce from "lodash/debounce";
 import axios from "axios";
 import Qs from "qs";
 
@@ -211,6 +211,7 @@ export default {
 
   data() {
     return {
+      axiosCancelToken: undefined,
       zoom: 14,
       map: null,
       bounds: null,
@@ -320,32 +321,31 @@ export default {
     },
 
     refresh() {
+      const DEBOUNCE_TIME = 600;
       if (this.zoom >= 10) {
         this.fetchBackendData();
 
-        var vm_this = this;
-
-        this.map.on("dragend", () => {
-          setTimeout(() => {
-            vm_this.fetchBackendData();
-          }, 100);
-        });
-
-        this.map.on("zoomend", () => {
-          setTimeout(() => {
-            vm_this.fetchBackendData();
-          }, 100);
-        });
+        const vm_this = this;
+        this.map.on("dragend", debounce(function () {
+          vm_this.fetchBackendData();
+        }, DEBOUNCE_TIME));
+        this.map.on("zoomend", debounce(function () {
+          vm_this.fetchBackendData();
+        }, DEBOUNCE_TIME));
       }
     },
-
     fetchBackendData() {
+      if (typeof this.axiosCancelToken !== typeof undefined) {
+        this.axiosCancelToken.cancel("Cancelled due to request override");
+      }
+
+      this.axiosCancelToken = axios.CancelToken.source();
       this.map = this.$refs.map.leafletObject;
       this.bounds_cords = this.map.getBounds();
       var bounds_cords = this.bounds_cords;
 
       var northWest = bounds_cords.getNorthWest(),
-        southEast = bounds_cords.getSouthEast();
+          southEast = bounds_cords.getSouthEast();
 
       var qs = Qs;
       var vm = this;
@@ -367,33 +367,34 @@ export default {
 
         this.show_survey_abspt_loader = true;
         axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
-            {
-              params: par,
-              paramsSerializer: (params) => {
-                return qs.stringify(params);
-              },
-            }
-          )
-          .then(function (response) {
-            vm.well_data_json = null;
-            vm.geo_json_data = null;
+            .get(
+                "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
+                {
+                  cancelToken: this.axiosCancelToken.token,
+                  params: par,
+                  paramsSerializer: (params) => {
+                    return qs.stringify(params);
+                  },
+                }
+            )
+            .then(function (response) {
+              vm.well_data_json = null;
+              vm.geo_json_data = null;
 
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.survey_abspt_points = response.data.survey_abspt_points;
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
-          .then(function () {
-            // always executed
-            vm.show_survey_abspt_loader = false;
-            vm.enable_change = true;
-          });
+              if (response.data.result && response.data.result == "error") {
+                console.log("error");
+              } else {
+                vm.survey_abspt_points = response.data.survey_abspt_points;
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+            .then(function () {
+              // always executed
+              vm.show_survey_abspt_loader = false;
+              vm.enable_change = true;
+            });
       }
 
       if (this.show_survey_p_data) {
@@ -408,30 +409,31 @@ export default {
 
         this.show_survey_p_data_loader = true;
         axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
-            {
-              params: par,
-              paramsSerializer: (params) => {
-                return qs.stringify(params);
-              },
-            }
-          )
-          .then(function (response) {
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.survey_p_data = response.data.survey_p_data;
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
-          .then(function () {
-            // always executed
-            vm.show_survey_p_data_loader = false;
-            vm.enable_change = true;
-          });
+            .get(
+                "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
+                {
+                  cancelToken: this.axiosCancelToken.token,
+                  params: par,
+                  paramsSerializer: (params) => {
+                    return qs.stringify(params);
+                  },
+                }
+            )
+            .then(function (response) {
+              if (response.data.result && response.data.result == "error") {
+                console.log("error");
+              } else {
+                vm.survey_p_data = response.data.survey_p_data;
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+            .then(function () {
+              // always executed
+              vm.show_survey_p_data_loader = false;
+              vm.enable_change = true;
+            });
       }
 
       if (this.show_survey_l_data) {
@@ -445,30 +447,31 @@ export default {
         par["show_survey_l_data"] = this.show_survey_l_data;
         this.show_survey_l_data_loader = true;
         axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
-            {
-              params: par,
-              paramsSerializer: (params) => {
-                return qs.stringify(params);
-              },
-            }
-          )
-          .then(function (response) {
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.survey_l_data = response.data.survey_l_data;
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
-          .then(function () {
-            // always executed
-            vm.show_survey_l_data_loader = false;
-            vm.enable_change = true;
-          });
+            .get(
+                "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
+                {
+                  cancelToken: this.axiosCancelToken.token,
+                  params: par,
+                  paramsSerializer: (params) => {
+                    return qs.stringify(params);
+                  },
+                }
+            )
+            .then(function (response) {
+              if (response.data.result && response.data.result == "error") {
+                console.log("error");
+              } else {
+                vm.survey_l_data = response.data.survey_l_data;
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+            .then(function () {
+              // always executed
+              vm.show_survey_l_data_loader = false;
+              vm.enable_change = true;
+            });
       }
 
       if (this.show_well_lines_data) {
@@ -483,30 +486,31 @@ export default {
 
         this.show_well_lines_data_loader = true;
         axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
-            {
-              params: par,
-              paramsSerializer: (params) => {
-                return qs.stringify(params);
-              },
-            }
-          )
-          .then(function (response) {
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.well_lines_data = response.data.well_lines_data;
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
-          .then(function () {
-            // always executed
-            vm.show_well_lines_data_loader = false;
-            vm.enable_change = true;
-          });
+            .get(
+                "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
+                {
+                  cancelToken: this.axiosCancelToken.token,
+                  params: par,
+                  paramsSerializer: (params) => {
+                    return qs.stringify(params);
+                  },
+                }
+            )
+            .then(function (response) {
+              if (response.data.result && response.data.result == "error") {
+                console.log("error");
+              } else {
+                vm.well_lines_data = response.data.well_lines_data;
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+            .then(function () {
+              // always executed
+              vm.show_well_lines_data_loader = false;
+              vm.enable_change = true;
+            });
       }
 
       if (this.show_well_points_data) {
@@ -521,33 +525,34 @@ export default {
 
         this.show_well_points_data_loader = true;
         axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
-            {
-              params: par,
-              paramsSerializer: (params) => {
-                return qs.stringify(params);
-              },
-            }
-          )
-          .then(function (response) {
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.well_points_data = response.data.well_points_data;
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
-          .then(function () {
-            // always executed
-            vm.show_well_points_data_loader = false;
-            vm.enable_change = true;
-          });
+            .get(
+                "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
+                {
+                  cancelToken: this.axiosCancelToken.token,
+                  params: par,
+                  paramsSerializer: (params) => {
+                    return qs.stringify(params);
+                  },
+                }
+            )
+            .then(function (response) {
+              if (response.data.result && response.data.result == "error") {
+                console.log("error");
+              } else {
+                vm.well_points_data = response.data.well_points_data;
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+            .then(function () {
+              // always executed
+              vm.show_well_points_data_loader = false;
+              vm.enable_change = true;
+            });
       }
     },
-  },
+  }
 };
 </script>
 
