@@ -28,12 +28,12 @@
         <div>
           <ul class="list-group list-group-horizontal">
             <li class="list-group-item">
-              <img style="width: 20px" src="./assets/images/symnum_10.png" />
+              <img style="width: 20px" src="./assets/map_icons/symnum_10.png" />
               Survey layer Abspt
               <img
                 style="width: 20px"
                 v-show="show_survey_abspt_loader"
-                src="./assets/images/loader.png"
+                src="./assets/map_icons/loader.png"
               />
             </li>
             <li class="list-group-item">
@@ -41,7 +41,7 @@
               <img
                 style="width: 20px"
                 v-show="show_survey_l_data_loader"
-                src="./assets/images/loader.png"
+                src="./assets/map_icons/loader.png"
               />
             </li>
             <li class="list-group-item">
@@ -49,17 +49,17 @@
               <img
                 style="width: 20px"
                 v-show="show_survey_p_data_loader"
-                src="./assets/images/loader.png"
+                src="./assets/map_icons/loader.png"
               />
             </li>
 
             <li class="list-group-item">
-              <img style="width: 20px" src="./assets/images/symnum_9.png" />
+              <img style="width: 20px" src="./assets/map_icons/symnum_9.png" />
               Well layer Point
               <img
                 style="width: 20px"
                 v-show="show_well_points_data_loader"
-                src="./assets/images/loader.png"
+                src="./assets/map_icons/loader.png"
               />
             </li>
             <li class="list-group-item">
@@ -67,7 +67,7 @@
               <img
                 style="width: 20px"
                 v-show="show_well_lines_data_loader"
-                src="./assets/images/loader.png"
+                src="./assets/map_icons/loader.png"
               />
             </li>
 
@@ -121,7 +121,10 @@
               )
             "
           >
-            <l-icon :icon-url="iconWellUrl" :icon-size="iconSize" />
+
+          <l-icon v-if="each_wellpoint._source.properties.SYMNUM == 4" :icon-url="iconWellUrl" :icon-size="iconSize" />
+          <l-icon v-if="each_wellpoint._source.properties.SYMNUM != 4" :icon-url="iconWellUrl" :icon-size="iconSize" />
+
           </l-marker>
         </template>
         <template v-if="well_lines_data && show_well_lines_data && zoom >= 14"
@@ -184,9 +187,9 @@ import {
   LControl,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
-import iconImage from "@/assets/images/symnum_10.png";
-import iconPermitMarkerImage from "@/assets/images/symnum_11.png";
-import iconWellUrl from "@/assets/images/symnum_9.png";
+import iconImage from "@/assets/map_icons/symnum_10.png";
+import iconPermitMarkerImage from "@/assets/map_icons/symnum_11.png";
+import iconWellUrl from "@/assets/map_icons/symnum_9.png";
 import FilterPanel from "./components/FilterPanel";
 import Loader from "./components/Loader";
 
@@ -235,7 +238,7 @@ export default {
       well_points_data: {},
       well_lines_data: {},
       parsed_data: {},
-      currentCenter: [30.091375, -104.139748],
+      currentCenter: [32.000000, -102.000000],
       iconWidth: 12.5,
       iconHeight: 20,
       api_number: "",
@@ -341,6 +344,10 @@ export default {
       }
     },
     fetchBackendData(event) {
+
+      if (this.zoom < 12) {
+        return;
+      }
       if (event == "zoomend" && this.prev_zoom < this.zoom) {
         this.prev_zoom = this.zoom;
 
