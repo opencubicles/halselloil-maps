@@ -7,14 +7,20 @@
             <li
                 class="menu-list map-widget"
                 tooltip-title="Data Filters"
-                @click="showDataFilterModal = true"
+                @click="
+                    toggleModal();
+                    showDataFilterModal = true;
+                "
             >
                 <i class="menu-list-icons settings-slider-icon"></i>
             </li>
             <li
                 class="menu-list map-widget"
                 tooltip-title="Layers"
-                @click="showLayerModal = true"
+                @click="
+                    toggleModal();
+                    showLayerModal = true;
+                "
             >
                 <i class="menu-list-icons layers-icon"></i>
             </li>
@@ -641,6 +647,10 @@ export default {
     methods: {
         changeTile() {
             this.$emit("change-tile", event.target.value);
+        },
+        toggleModal() {
+            this.showLayerModal = false;
+            this.showDataFilterModal = false;
         },
     },
     inheritAttrs: false,
