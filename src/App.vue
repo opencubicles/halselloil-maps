@@ -18,9 +18,7 @@
       @update:center="centerUpdate"
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
-      <l-control position="bottomleft">
-        <tile-panel :tiles="tiles" @change-tile="changeTile = $event"> </tile-panel>
-      </l-control>
+    
 
       <l-control position="topleft">
         <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
@@ -152,7 +150,6 @@ import DataFilterPanel from "./components/DataFilterPanel";
 import Loader from "./components/Loader";
 import debounce from "lodash/debounce";
 
-import TilePanel from "./components/TilePanel";
 import PopupContent from "./components/PopupContent";
 
 import axios from "axios";
@@ -173,7 +170,6 @@ export default {
     LFeatureGroup,
     FilterPanel,
     DataFilterPanel,
-    TilePanel,
     Loader,
   },
 
