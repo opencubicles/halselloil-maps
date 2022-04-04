@@ -1,7 +1,6 @@
 <template>
   <div style="height: 100vh; width: 100vw">
-    <loader v-show="show_loader"> </loader>
-
+  <loader v-show="show_loader"> </loader>
     <l-map
       v-model="zoom"
       v-model:zoom="zoom"
@@ -12,84 +11,61 @@
         debounceMoveend: true,
         preferCanvas: true,
         doubleClickZoom: false,
-        dragging: this.enable_change,
-        zoomControl: this.enable_change,
+        //dragging: this.enable_change,
+        zoomControl: false,
       }"
       @ready="refresh"
       @update:center="centerUpdate"
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
-
-      <l-control position="topright">
+      <l-control position="bottomleft">
         <tile-panel :tiles="tiles" @changeTile="changeTile"> </tile-panel>
       </l-control>
 
-      <l-control position="bottomleft">
+      <l-control position="topleft">
+      
+        <data-filter-panel v-model="show" />
+
+        <filter-panel v-model="show" @apply="apply" @cancel="cancel" />
+
+        <!--<button type="button" class="btn btn-success" @click="show = true">
+          Filter Wells
+        </button>-->
+      </l-control>
+
+      <l-control-zoom position="bottomright"  ></l-control-zoom>
+
+      <!--<l-control position="bottomleft">
         <div>
           <ul class="list-group list-group-horizontal">
             <li class="list-group-item">
-              <img style="width: 20px" src="./assets/images/symnum_10.png" />
-              Survey layer Abspt
-              <img
-                style="width: 20px"
-                v-show="show_survey_abspt_loader"
-                src="./assets/images/loader.png"
-              />
+              <img style="width: 20px" src="./assets/symnum_11.png" />: Permit
+              vertical Well
             </li>
+            <li class="list-group-item">Blue Line: Permit Horizontal Well</li>
             <li class="list-group-item">
-              Black Line: Survey layer LineString
-              <img
-                style="width: 20px"
-                v-show="show_survey_l_data_loader"
-                src="./assets/images/loader.png"
-              />
+              <img style="width: 20px" src="./assets/symnum_10.png" /> Survey
+              layer Point
             </li>
-            <li class="list-group-item">
-              Red Block: Survey Block layer
-              <img
-                style="width: 20px"
-                v-show="show_survey_p_data_loader"
-                src="./assets/images/loader.png"
-              />
-            </li>
+            <li class="list-group-item">Black Line: Survey layer LineString</li>
+            <li class="list-group-item">Red Block: Survey Block layer</li>
 
             <li class="list-group-item">
-              <img style="width: 20px" src="./assets/images/symnum_9.png" />
-              Well layer Point
-              <img
-                style="width: 20px"
-                v-show="show_well_points_data_loader"
-                src="./assets/images/loader.png"
-              />
+              <img style="width: 20px" src="./assets/symnum_9.png" /> Well layer
+              Point
             </li>
-            <li class="list-group-item">
-              Purple Line: Well layer LineString
-              <img
-                style="width: 20px"
-                v-show="show_well_lines_data_loader"
-                src="./assets/images/loader.png"
-              />
-            </li>
-
-            <li class="list-group-item">Center: {{ currentCenter }}</li>
+            <li class="list-group-item">Orange Line: Well layer LineString</li>
+            <li class="list-group-item">Center: {{currentCenter}}</li>
           </ul>
         </div>
-      </l-control>
-
-      <l-control position="bottomright">
-        <filter-panel v-model="show" @apply="apply" @cancel="cancel" />
-
-        <button type="button" class="btn btn-success" @click="show = true">
-          Filter Wells
-        </button>
-      </l-control>
+      </l-control>-->
 
       <l-feature-group ref="features">
-        <l-popup :options="{ autoPan: false }">
-          <popup-content v-if="parsed_data" :parsed_data="parsed_data">
-          </popup-content>
+        <l-popup :options="{autoPan: false}">
+          <popup-content :parsed_data="parsed_data"> </popup-content>
         </l-popup>
       </l-feature-group>
+
       <l-feature-group ref="featureGroup">
         <template v-if="survey_abspt_points && show_survey_abspt">
           <l-marker
@@ -168,6 +144,7 @@
 </template>
 
 <script>
+
 import {
   LMap,
   LTileLayer,
@@ -178,19 +155,23 @@ import {
   LIcon,
   LFeatureGroup,
   LControl,
-} from "@vue-leaflet/vue-leaflet";
+  LControlZoom,
+
+ } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
+import "@/assets/css/map.css";
 import iconImage from "@/assets/images/symnum_10.png";
 import iconPermitMarkerImage from "@/assets/images/symnum_11.png";
 import iconWellUrl from "@/assets/images/symnum_9.png";
-import FilterPanel from "./components/FilterPanel";
+import FilterPanel from './components/FilterPanel';
+import DataFilterPanel from "./components/DataFilterPanel";
 import Loader from "./components/Loader";
 
-import TilePanel from "./components/TilePanel";
-import PopupContent from "./components/PopupContent";
+import TilePanel from './components/TilePanel';
+import PopupContent from './components/PopupContent';
 
-import axios from "axios";
-import Qs from "qs";
+import axios from 'axios';
+import Qs from 'qs';
 
 export default {
   components: {
@@ -201,10 +182,12 @@ export default {
     LPolygon,
     LPolyline,
     LControl,
+    LControlZoom,
     LPopup,
     PopupContent,
     LFeatureGroup,
     FilterPanel,
+    DataFilterPanel,
     TilePanel,
     Loader,
   },
@@ -221,6 +204,7 @@ export default {
       enable_change: true,
       show_well_points_data: true,
       show_well_lines_data: true,
+      showModal: false,
 
       survey_abspt_points: {},
       survey_p_data: {},
@@ -228,9 +212,9 @@ export default {
       well_points_data: {},
       well_lines_data: {},
       parsed_data: {},
-      currentCenter: [30.091375, -104.139748],
-      iconWidth: 12.5,
-      iconHeight: 20,
+      currentCenter: [32.000000, -102.000000],
+      iconWidth: 15,
+      iconHeight: 15,
       api_number: "",
       operator_name: "",
       show_survey_abspt_loader: true,
