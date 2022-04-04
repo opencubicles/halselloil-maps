@@ -19,11 +19,11 @@
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
       <l-control position="bottomleft">
-        <tile-panel :tiles="tiles" @changeTile="changeTile"> </tile-panel>
+        <tile-panel :tiles="tiles" @change-tile="changeTile = $event"> </tile-panel>
       </l-control>
 
       <l-control position="topleft">
-        <data-filter-panel v-model="show" />
+        <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
 
         <filter-panel v-model="show" @apply="apply" @cancel="cancel" />
 

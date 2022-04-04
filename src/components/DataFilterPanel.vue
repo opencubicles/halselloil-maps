@@ -482,11 +482,12 @@
                     </summary>
                     <div class="filter-contents">
                         <div class="row">
-                            <select class="base-map-select">
-                                <option>1</option>
-                                <option>2</option>
-                                <option>3</option>
-                                <option>4</option>
+                            <select
+                                class="base-map-select"
+                                v-on:change="changeTile(rowId, $event)"
+                            >
+                                <option value="0">Street</option>
+                                <option value="1">Topo</option>
                             </select>
                         </div>
                     </div>
@@ -637,6 +638,11 @@ export default {
     },
 
     name: "DataFilterPanel",
+    methods: {
+        changeTile() {
+            this.$emit("change-tile", event.target.value);
+        },
+    },
     inheritAttrs: false,
 };
 </script>
