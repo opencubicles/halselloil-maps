@@ -35,30 +35,7 @@
 
       <l-control-zoom position="bottomright"  ></l-control-zoom>
 
-      <!--<l-control position="bottomleft">
-        <div>
-          <ul class="list-group list-group-horizontal">
-            <li class="list-group-item">
-              <img style="width: 20px" src="./assets/symnum_11.png" />: Permit
-              vertical Well
-            </li>
-            <li class="list-group-item">Blue Line: Permit Horizontal Well</li>
-            <li class="list-group-item">
-              <img style="width: 20px" src="./assets/symnum_10.png" /> Survey
-              layer Point
-            </li>
-            <li class="list-group-item">Black Line: Survey layer LineString</li>
-            <li class="list-group-item">Red Block: Survey Block layer</li>
-
-            <li class="list-group-item">
-              <img style="width: 20px" src="./assets/symnum_9.png" /> Well layer
-              Point
-            </li>
-            <li class="list-group-item">Orange Line: Well layer LineString</li>
-            <li class="list-group-item">Center: {{currentCenter}}</li>
-          </ul>
-        </div>
-      </l-control>-->
+      
 
       <l-feature-group ref="features">
         <l-popup :options="{autoPan: false}">
@@ -69,8 +46,8 @@
       <l-feature-group ref="featureGroup">
         <template v-if="survey_abspt_points && show_survey_abspt">
           <l-marker
-            v-for="(each_surveypoint, index) in survey_abspt_points"
-            :key="index"
+            v-for="each_surveypoint in survey_abspt_points"
+            :key="each_surveypoint._id"
             :lat-lng="each_surveypoint._source.geometry.coordinates"
             @click="
               openPopUp(
@@ -82,10 +59,12 @@
             <l-icon :icon-url="iconUrl" :icon-size="iconSize" />
           </l-marker>
         </template>
-        <template v-if="well_points_data && show_well_points_data">
+        <template
+          v-if="well_points_data && show_well_points_data && zoom >= 14"
+        >
           <l-marker
-            v-for="(each_wellpoint, index) in well_points_data"
-            :key="index"
+            v-for="each_wellpoint in well_points_data"
+            :key="each_wellpoint._id"
             :lat-lng="each_wellpoint._source.geometry.coordinates"
             @click="
               openPopUp(
@@ -94,14 +73,18 @@
               )
             "
           >
-            <l-icon :icon-url="iconWellUrl" :icon-size="iconSize" />
+
+          <l-icon v-if="each_wellpoint._source.properties.SYMNUM == 4" :icon-url="iconWellUrl" :icon-size="iconSize" />
+          <l-icon v-if="each_wellpoint._source.properties.SYMNUM != 4" :icon-url="iconWellUrl" :icon-size="iconSize" />
+
           </l-marker>
         </template>
-
-        <template v-if="well_lines_data && show_well_lines_data">
+        <template v-if="well_lines_data && show_well_lines_data && zoom >= 14"
+          ><!--smoothFactor incrases, performance increases, detail decreases-->
           <l-polyline
-            v-for="(each_wellline, index) in well_lines_data"
-            :key="index"
+            smoothFactor="8"
+            v-for="each_wellline in well_lines_data"
+            :key="each_wellline._id"
             :lat-lngs="each_wellline._source.geometry.coordinates"
             color="purple"
             @click="
@@ -116,8 +99,8 @@
 
         <template v-if="survey_p_data && show_survey_p_data">
           <l-polygon
-            v-for="(each_survey_p_data, index) in survey_p_data"
-            :key="index"
+            v-for="each_survey_p_data in survey_p_data"
+            :key="each_survey_p_data._id"
             :lat-lngs="each_survey_p_data._source.geometry.coordinates"
             color="red"
           >
@@ -125,8 +108,8 @@
         </template>
         <template v-if="survey_l_data && show_survey_l_data">
           <l-polyline
-            v-for="(each_survey_l_data, index) in survey_l_data"
-            :key="index"
+            v-for="each_survey_l_data in survey_l_data"
+            :key="each_survey_l_data._id"
             :lat-lngs="each_survey_l_data._source.geometry.coordinates"
             color="black"
             @click="
@@ -160,12 +143,13 @@ import {
  } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import "@/assets/css/map.css";
-import iconImage from "@/assets/images/symnum_10.png";
-import iconPermitMarkerImage from "@/assets/images/symnum_11.png";
-import iconWellUrl from "@/assets/images/symnum_9.png";
+import iconImage from "@/assets/map_icons/symnum_10.png";
+import iconPermitMarkerImage from "@/assets/map_icons/symnum_11.png";
+import iconWellUrl from "@/assets/map_icons/symnum_9.png";
 import FilterPanel from './components/FilterPanel';
 import DataFilterPanel from "./components/DataFilterPanel";
 import Loader from "./components/Loader";
+import debounce from "lodash/debounce";
 
 import TilePanel from './components/TilePanel';
 import PopupContent from './components/PopupContent';
@@ -194,7 +178,10 @@ export default {
 
   data() {
     return {
+      axiosCancelToken: undefined,
       zoom: 14,
+      prev_zoom: 14,
+      last_fetched_data_zoom: 14,
       map: null,
       bounds: null,
       show: false,
@@ -257,13 +244,7 @@ export default {
       return iconImage;
     },
     show_loader() {
-      return (
-        this.show_well_lines_data_loader &&
-        this.show_well_points_data_loader &&
-        this.show_survey_abspt_loader &&
-        this.show_survey_l_data_loader &&
-        this.show_survey_p_data_loader
-      );
+      return this.show_survey_p_data_loader;
     },
 
     iconPermitMarkerImage() {
@@ -304,26 +285,48 @@ export default {
     },
 
     refresh() {
+      const DEBOUNCE_TIME = 600;
       if (this.zoom >= 10) {
         this.fetchBackendData();
 
-        var vm_this = this;
-
-        this.map.on("dragend", () => {
-          setTimeout(() => {
-            vm_this.fetchBackendData();
-          }, 100);
-        });
-
-        this.map.on("zoomend", () => {
-          setTimeout(() => {
-            vm_this.fetchBackendData();
-          }, 100);
-        });
+        const vm_this = this;
+        this.map.on(
+          "dragend",
+          debounce(function () {
+            vm_this.fetchBackendData("dragend");
+          }, DEBOUNCE_TIME)
+        );
+        this.map.on(
+          "zoomend",
+          debounce(function () {
+            vm_this.fetchBackendData("zoomend");
+          }, DEBOUNCE_TIME)
+        );
       }
     },
+    fetchBackendData(event) {
 
-    fetchBackendData() {
+      if (this.zoom < 12) {
+        return;
+      }
+      if (event == "zoomend" && this.prev_zoom < this.zoom) {
+        this.prev_zoom = this.zoom;
+
+        return;
+      }
+
+      this.prev_zoom = this.zoom;
+
+      if (event == "zoomend" && this.last_fetched_data_zoom <= this.zoom) {
+        return;
+      }
+      this.last_fetched_data_zoom = this.zoom;
+
+      if (typeof this.axiosCancelToken !== typeof undefined) {
+        this.axiosCancelToken.cancel("Cancelled due to request override");
+      }
+
+      this.axiosCancelToken = axios.CancelToken.source();
       this.map = this.$refs.map.leafletObject;
       this.bounds_cords = this.map.getBounds();
       var bounds_cords = this.bounds_cords;
@@ -354,6 +357,7 @@ export default {
           .get(
             "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
             {
+              cancelToken: this.axiosCancelToken.token,
               params: par,
               paramsSerializer: (params) => {
                 return qs.stringify(params);
@@ -395,6 +399,7 @@ export default {
           .get(
             "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
             {
+              cancelToken: this.axiosCancelToken.token,
               params: par,
               paramsSerializer: (params) => {
                 return qs.stringify(params);
@@ -432,6 +437,7 @@ export default {
           .get(
             "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
             {
+              cancelToken: this.axiosCancelToken.token,
               params: par,
               paramsSerializer: (params) => {
                 return qs.stringify(params);
@@ -455,7 +461,7 @@ export default {
           });
       }
 
-      if (this.show_well_lines_data) {
+      if (this.show_well_lines_data && this.zoom >= 14) {
         par = {
           north_west_lat: northWest.lat,
           north_west_lng: northWest.lng,
@@ -470,6 +476,7 @@ export default {
           .get(
             "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
             {
+              cancelToken: this.axiosCancelToken.token,
               params: par,
               paramsSerializer: (params) => {
                 return qs.stringify(params);
@@ -493,7 +500,7 @@ export default {
           });
       }
 
-      if (this.show_well_points_data) {
+      if (this.show_well_points_data && this.zoom >= 14) {
         par = {
           north_west_lat: northWest.lat,
           north_west_lng: northWest.lng,
@@ -508,6 +515,7 @@ export default {
           .get(
             "https://dev-halselloil.opencubicles.com/search_data/test_search2.php",
             {
+              cancelToken: this.axiosCancelToken.token,
               params: par,
               paramsSerializer: (params) => {
                 return qs.stringify(params);

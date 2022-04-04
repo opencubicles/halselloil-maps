@@ -1,9 +1,7 @@
 <template>
   <div style="height: 100vh; width: 100vw">
-
-    <loader v-show="show_loader"> </loader>
-
-    <l-map 
+  <loader v-show="show_loader"> </loader>
+    <l-map
       v-model="zoom"
       v-model:zoom="zoom"
       :center="currentCenter"
@@ -13,447 +11,26 @@
         debounceMoveend: true,
         preferCanvas: true,
         doubleClickZoom: false,
-        dragging: this.enable_change,
-        //zoomControl: this.enable_change,
+        //dragging: this.enable_change,
         zoomControl: false,
       }"
       @ready="refresh"
       @update:center="centerUpdate"
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
-
-      <l-control position="topright">
+      <l-control position="bottomleft">
         <tile-panel :tiles="tiles" @changeTile="changeTile"> </tile-panel>
       </l-control>
 
       <l-control position="topleft">
-      <div class="map-side-menu">
-        <ul class="map-feature-menu">
-          <li class="menu-list map-widget data-filters" tooltip-title="Home"><i class="menu-list-icons home-icon js-pop"></i></li>
-          <li class="menu-list map-widget data-filters" tooltip-title="Data Filters"><i class="menu-list-icons settings-slider-icon js-pop"></i>
-                            <span class="menu-pop" id="data-filters">
-                            <div class="pop-header pointer-off">
-                                <div class="header-items-left">
-                                    <label class="pop-header-label">
-                                        <h4>Data Filters</h4>
-                                    </label>
-                                </div>
-                                <div class="header-items-right">
-                                    <button class="btn btn-md2 btn-primary data-filter-header-btn pointer-on" id="filter-oil-data" onClick='javascript:void(0)'>Apply</button>
-                                </div>
-                            </div>
-                            <div class="data-filters-aoi">
-                                <details>
-                                    <summary class="pointer-off">
-                                        <div class="items-left">
-                                            <h6>Permits</h6>
-                                        </div>
-                                        <div class="items-right">
-                                            <div class="form-check form-switch switch-position">
-                                              <input class="form-check-input switch-visible js-well-layer" type="checkbox" id="flexSwitchCheckCheckedWell" onClick='javascript:void(0)' value="2">
-                                            </div>
-                                            <i class="expand-icons arrow-expand-icon pointer-on" onClick='javascript:void(0)'></i> 
-                                        </div>
-                                    </summary>
-                                    <div class="filter-contents">
-                                        <div class="GridLex-gap-center gridlex-override">
-                                            <div class="GridLex-grid-noGutter-equalHeight">
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Country" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="OFS Region" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="State/Province" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="County/Parish" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Approved Date" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Operator Alias" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Lease Name" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="API num 10" id="" name="api_number" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Permit Number" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="File Date" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Amended Date" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="District" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Well Number" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Well Status" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Field" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Formation" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Permit Status" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Drill Type" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Permit Type" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Permit Depth" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Operator" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Section" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Block" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Township" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Range" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Survey" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Survey 2" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Abstract" id="" name="" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </details>
-                            <hr class="hr-m">
-                            </div>
-                            <div class="data-filters-production">
-                                <details>
-                                    <summary class="pointer-off">
-                                        <div class="items-left">
-                                            <h6>Production</h6>
-                                        </div>
-                                        <div class="items-right">
-                                            <div class="form-check form-switch switch-position">
-                                              <input class="form-check-input switch-visible js-well-layer" type="checkbox" id="flexSwitchCheckChecked" onClick='javascript:void(0)' value="4,5,6" >
-                                            </div>
-                                            <i class="expand-icons arrow-expand-icon pointer-on" onClick='javascript:void(0)'></i>  
-                                        </div>
-                                    </summary>
-                                    <div class="filter-contents">
-                                        <div class="GridLex-gap-center gridlex-override">
-                                            <div class="GridLex-grid-noGutter-equalHeight">
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="Country" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="OFS Region" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="State/Province" id="" name="" />
-                                                    </div>
-                                                </div>
-                                                <div class="GridLex-col-6_sm-6_xs-12">
-                                                    <div class="data-filter-item">
-                                                        <input class="search" placeholder="County/Parish" id="" name="" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </details>
-                            </div>
-                            </span> 
-                        </li>
-                        <li class="menu-list map-widget data-filters" tooltip-title="Map Layers"><i class="menu-list-icons layers-icon js-pop"></i>
-                            <span class="menu-pop" id="layers">
-                            <div class="pop-header">
-                                <div class="header-items-left">
-                                    <label class="pop-header-label">
-                                        <h4>Layers</h4>
-                                    </label>
-                                </div>
-                                <div class="header-items-right">
-                                    
-                                </div>
-                            </div>
-                            <div class="data-filter-basemap">
-                                <details>
-                                    <summary class="pointer-off">
-                                        <div class="items-left">
-                                            <h6>Base Map</h6>
-                                        </div>
-                                        <div class="items-right">
-                                            <!--<div class="form-check form-switch switch-position">
-                                              <input class="form-check-input switch-visible" type="checkbox" id="flexSwitchCheckDefault" >
-                                            </div>-->
-                                            <i class="expand-icons arrow-expand-icon pointer-on" onClick='javascript:void(0)'></i> 
-                                        </div>
-                                    </summary>
-                                    <div class="filter-contents">
-                                        <div class="row">
-                                            <select class="base-map-select">
-                                                <option>1</option>
-                                                <option>2</option>
-                                                <option>3</option>
-                                                <option>4</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </details>
-                            </div>
-                            <div class="data-filter-survey">
-                                <details>
-                                    <summary class="pointer-off">
-                                        <div class="items-left">
-                                            <h6>Surveys</h6>
-                                        </div>
-                                        <div class="items-right">
-                                            <div class="form-check form-switch switch-position">
-                                              <input class="form-check-input switch-visible" type="checkbox" id="flexSwitchCheckCheckedSurvey" value="surv" >
-                                            </div>
-                                            <i class="expand-icons arrow-expand-icon pointer-on" onClick='javascript:void(0)'></i> 
-                                        </div>
-                                    </summary>
-                                    <div class="filter-contents">
-                                        <div class="row">
-                                            <div class="items-left">
-                                                <label class="survey-label" style="font-weight:300 !important;">PLS State</label>
-                                            </div>
-                                            <div class="items-right">
-                                                <div class="form-check form-switch switch-position">
-                                                  <input class="form-check-input switch-visible js-survey-item" type="checkbox" value="pls_state" id="flexSwitchPlsState">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="items-left">
-                                                <label class="survey-label" style="font-weight:300 !important;">PLS Township/Block</label>
-                                            </div>
-                                            <div class="items-right">
-                                                <div class="form-check form-switch switch-position">
-                                                  <input class="form-check-input switch-visible js-survey-item" type="checkbox" value="pls_township" id="flexSwitchTownship" >
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="items-left">
-                                                <label class="survey-label" style="font-weight:300 !important;">PLS Section/Abstract</label>
-                                            </div>
-                                            <div class="items-right">
-                                                <div class="form-check form-switch switch-position">
-                                                  <input class="form-check-input switch-visible js-survey-item" type="checkbox" value="pls_abstract" id="flexSwitchAbstract" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="items-left">
-                                                <label class="survey-label" style="font-weight:300 !important;">PLS Intersected</label>
-                                            </div>
-                                            <div class="items-right">
-                                                <div class="form-check form-switch switch-position">
-                                                  <input class="form-check-input switch-visible js-survey-item" type="checkbox"  value="pls_intersected" id="flexSwitchIntersected" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="items-left">
-                                                <label class="survey-label" style="font-weight:300 !important;">TX Surveys</label>
-                                            </div>
-                                            <div class="items-right">
-                                                <div class="form-check form-switch switch-position">
-                                                  <input class="form-check-input switch-visible js-survey-item" type="checkbox" value="tx_surveys" id="flexSwitchCheckCheckedTexasSurvey" >
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </details>
-                            </div>
-                            </span> 
-                        </li>
-                        <li class="menu-list map-widget data-filters" tooltip-title="Exports"><i class="menu-list-icons upload-icon js-pop"></i>
-                            <span class="menu-pop" id="exports">
-                                <div class="pop-header">
-                                    <div class="header-items-left">
-                                        <label class="pop-header-label">
-                                            <h4>Exports</h4>
-                                        </label>
-                                    </div>
-                                    <div class="header-items-right">
-                                    </div>
-                                </div>
-                                <div class="data-filter-basemap">
-                                    <details>
-                                        <summary class="pointer-off">
-                                            <div class="items-left">
-                                                <h6>Test</h6>
-                                            </div>
-                                            <div class="items-right">
-                                                <!--<div class="form-check form-switch switch-position">
-                                                  <input class="form-check-input switch-visible" type="checkbox" id="flexSwitchCheckDefault" >
-                                                </div>-->
-                                                <i class="expand-icons arrow-expand-icon pointer-on" onClick='javascript:void(0)'></i> 
-                                            </div>
-                                        </summary>
-                                        <div class="filter-contents">
-                                            <div class="row">
-                                                <h6>Test</h6>
-                                            </div>
-                                        </div>
-                                    </details>
-                                </div>
-                            </span> 
-                        </li>
-                        <li class="menu-list map-widget data-filters" tooltip-title="Snapshots"><i class="menu-list-icons camera-icon js-pop"></i>
-                            <span class="menu-pop" id="screenshot">
-                                <div class="pop-header">
-                                    <div class="header-items-left">
-                                        <label class="pop-header-label">
-                                            <h4>Screenshots</h4>
-                                        </label>
-                                    </div>
-                                    <div class="header-items-right">
-                                    </div>
-                                </div>
-                                <div class="data-filter-basemap">
-                                    <details>
-                                        <summary class="pointer-off">
-                                            <div class="items-left">
-                                                <h6>Test</h6>
-                                            </div>
-                                            <div class="items-right">
-                                                <!--<div class="form-check form-switch switch-position">
-                                                  <input class="form-check-input switch-visible" type="checkbox" id="flexSwitchCheckDefault" >
-                                                </div>-->
-                                                <i class="expand-icons arrow-expand-icon pointer-on" onClick='javascript:void(0)'></i>  
-                                            </div>
-                                        </summary>
-                                        <div class="filter-contents">
-                                            <div class="row">
-                                                <h6>Test</h6>
-                                            </div>
-                                        </div>
-                                    </details>
-                                </div>
-                            </span> 
-                        </li>
-                        <li class="menu-list map-widget data-filters" tooltip-title="Tools"><i class="menu-list-icons tools-icon js-pop"></i>
-                            <span class="menu-pop" id="tools">
-                                <div class="pop-header">
-                                    <div class="header-items-left">
-                                        <label class="pop-header-label">
-                                            <h4>Tools</h4>
-                                        </label>
-                                    </div>
-                                    <div class="header-items-right">
-                                    </div>
-                                </div>
-                                <div class="data-filter-basemap">
-                                    <details>
-                                        <summary class="pointer-off">
-                                            <div class="items-left">
-                                                <h6>Test</h6>
-                                            </div>
-                                            <div class="items-right">
-                                                <!--<div class="form-check form-switch switch-position">
-                                                  <input class="form-check-input switch-visible" type="checkbox" id="flexSwitchCheckDefault" >
-                                                </div>-->
-                                                <i class="expand-icons arrow-expand-icon pointer-on" onClick='javascript:void(0)'></i>  
-                                            </div>
-                                        </summary>
-                                        <div class="filter-contents">
-                                            <div class="row">
-                                                <h6>Test</h6>
-                                            </div>
-                                        </div>
-                                    </details>
-                                </div>
-                            </span> 
-                        </li>
-        </ul>
-      </div>
+      
+        <data-filter-panel v-model="show" />
+
+        <filter-panel v-model="show" @apply="apply" @cancel="cancel" />
+
+        <!--<button type="button" class="btn btn-success" @click="show = true">
+          Filter Wells
+        </button>-->
       </l-control>
 
       <l-control-zoom position="bottomright"  ></l-control-zoom>
@@ -462,70 +39,33 @@
         <div>
           <ul class="list-group list-group-horizontal">
             <li class="list-group-item">
-              <img style="width: 20px" src="./assets/images/symnum_10.png" />
-              Survey layer Abspt
-              <img
-                style="width: 20px"
-                v-show="show_survey_abspt_loader"
-                src="./assets/images/loader.png"
-              />
+              <img style="width: 20px" src="./assets/symnum_11.png" />: Permit
+              vertical Well
             </li>
+            <li class="list-group-item">Blue Line: Permit Horizontal Well</li>
             <li class="list-group-item">
-              Black Line: Survey layer LineString
-              <img
-                style="width: 20px"
-                v-show="show_survey_l_data_loader"
-                src="./assets/images/loader.png"
-              />
+              <img style="width: 20px" src="./assets/symnum_10.png" /> Survey
+              layer Point
             </li>
-            <li class="list-group-item">
-              Red Block: Survey Block layer
-              <img
-                style="width: 20px"
-                v-show="show_survey_p_data_loader"
-                src="./assets/images/loader.png"
-              />
-            </li>
+            <li class="list-group-item">Black Line: Survey layer LineString</li>
+            <li class="list-group-item">Red Block: Survey Block layer</li>
 
             <li class="list-group-item">
-              <img style="width: 20px" src="./assets/images/symnum_9.png" />
-              Well layer Point
-              <img
-                style="width: 20px"
-                v-show="show_well_points_data_loader"
-                src="./assets/images/loader.png"
-              />
+              <img style="width: 20px" src="./assets/symnum_9.png" /> Well layer
+              Point
             </li>
-            <li class="list-group-item">
-              Purple Line: Well layer LineString
-              <img
-                style="width: 20px"
-                v-show="show_well_lines_data_loader"
-                src="./assets/images/loader.png"
-              />
-            </li>
-
-            <li class="list-group-item">Center: {{ currentCenter }}</li>
+            <li class="list-group-item">Orange Line: Well layer LineString</li>
+            <li class="list-group-item">Center: {{currentCenter}}</li>
           </ul>
         </div>
       </l-control>-->
 
-      <l-control position="bottomright">
-        <data-filter-panel v-model="show" />
-
-        <filter-panel v-model="show" @apply="apply" @cancel="cancel" />
-
-        <button type="button" class="btn btn-success" @click="show = true">
-          Filter Wells
-        </button>
-      </l-control>
-
       <l-feature-group ref="features">
-        <l-popup :options="{ autoPan: false }">
-          <popup-content v-if="parsed_data" :parsed_data="parsed_data">
-          </popup-content>
+        <l-popup :options="{autoPan: false}">
+          <popup-content :parsed_data="parsed_data"> </popup-content>
         </l-popup>
       </l-feature-group>
+
       <l-feature-group ref="featureGroup">
         <template v-if="survey_abspt_points && show_survey_abspt">
           <l-marker
@@ -604,6 +144,7 @@
 </template>
 
 <script>
+
 import {
   LMap,
   LTileLayer,
@@ -615,20 +156,22 @@ import {
   LFeatureGroup,
   LControl,
   LControlZoom,
-} from "@vue-leaflet/vue-leaflet";
+
+ } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
+import "@/assets/css/map.css";
 import iconImage from "@/assets/images/symnum_10.png";
 import iconPermitMarkerImage from "@/assets/images/symnum_11.png";
 import iconWellUrl from "@/assets/images/symnum_9.png";
-import FilterPanel from "./components/FilterPanel";
+import FilterPanel from './components/FilterPanel';
 import DataFilterPanel from "./components/DataFilterPanel";
 import Loader from "./components/Loader";
 
-import TilePanel from "./components/TilePanel";
-import PopupContent from "./components/PopupContent";
+import TilePanel from './components/TilePanel';
+import PopupContent from './components/PopupContent';
 
-import axios from "axios";
-import Qs from "qs";
+import axios from 'axios';
+import Qs from 'qs';
 
 export default {
   components: {
