@@ -1864,58 +1864,58 @@ i.menu-list-icons {
     opacity: 0.5;
 }
 .tools-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/joystick.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/joystick.svg");
 }
 .camera-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/camera.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/camera.svg");
 }
 .withdrawal-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/withdrawal.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/withdrawal.svg");
 }
 .layers-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/layers.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/layers.svg");
 }
 .settings-slider-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/settings-slider.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/settings-slider.svg");
 }
 .settings-gear-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/settings-gear.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/settings-gear.svg");
 }
 .home-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/home.1.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/home.1.svg");
 }
 .browser-window-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/browser-window.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/browser-window.svg");
 }
 .arrow-expand-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/arrow-expand.1.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/arrow-expand.1.svg");
 }
 .upload-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/upload.1.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/upload.1.svg");
 }
 .invoice-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/invoice.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/invoice.svg");
 }
 .user-3-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/user-3.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/user-3.svg");
 }
 .reply-arrow-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/reply-arrow.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/reply-arrow.svg");
 }
 .arrow-down-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/arrow-down-135.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/arrow-down-135.svg");
 } 
 .arrow-down-icon:hover {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/arrow-down-135.1.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/arrow-down-135.1.svg");
 } 
 .drag-drop-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/drag-n-drop.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/drag-n-drop.svg");
 }  
 .x-mark-circle-icon {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/x-mark-circle.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/x-mark-circle.svg");
 } 
 .x-mark-circle-icon:hover {
-    background-image: url("../../../../../../../../../../../Users/zebhalsell/Documents/Code/halselloil-maps/src/assets/icons/halsell-icons/all/x-mark-circle.1.svg");
+    background-image: url("~@/assets/icons/halsell-icons/all/x-mark-circle.1.svg");
 } 
 .previous-pg-icon {
     width: 1.5em !important;

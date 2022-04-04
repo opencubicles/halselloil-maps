@@ -1,6 +1,6 @@
 <template>
   <div style="height: 100vh; width: 100vw">
-  <loader v-show="show_loader"> </loader>
+    <loader v-show="show_loader"> </loader>
     <l-map
       v-model="zoom"
       v-model:zoom="zoom"
@@ -23,7 +23,6 @@
       </l-control>
 
       <l-control position="topleft">
-      
         <data-filter-panel v-model="show" />
 
         <filter-panel v-model="show" @apply="apply" @cancel="cancel" />
@@ -33,12 +32,10 @@
         </button>-->
       </l-control>
 
-      <l-control-zoom position="bottomright"  ></l-control-zoom>
-
-      
+      <l-control-zoom position="bottomright"></l-control-zoom>
 
       <l-feature-group ref="features">
-        <l-popup :options="{autoPan: false}">
+        <l-popup :options="{ autoPan: false }">
           <popup-content :parsed_data="parsed_data"> </popup-content>
         </l-popup>
       </l-feature-group>
@@ -73,10 +70,16 @@
               )
             "
           >
-
-          <l-icon v-if="each_wellpoint._source.properties.SYMNUM == 4" :icon-url="iconWellUrl" :icon-size="iconSize" />
-          <l-icon v-if="each_wellpoint._source.properties.SYMNUM != 4" :icon-url="iconWellUrl" :icon-size="iconSize" />
-
+            <l-icon
+              v-if="each_wellpoint._source.properties.SYMNUM == 4"
+              :icon-url="iconWellUrl"
+              :icon-size="iconSize"
+            />
+            <l-icon
+              v-if="each_wellpoint._source.properties.SYMNUM != 4"
+              :icon-url="iconWellUrl"
+              :icon-size="iconSize"
+            />
           </l-marker>
         </template>
         <template v-if="well_lines_data && show_well_lines_data && zoom >= 14"
@@ -127,7 +130,6 @@
 </template>
 
 <script>
-
 import {
   LMap,
   LTileLayer,
@@ -139,23 +141,22 @@ import {
   LFeatureGroup,
   LControl,
   LControlZoom,
-
- } from "@vue-leaflet/vue-leaflet";
+} from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import "@/assets/css/map.css";
 import iconImage from "@/assets/map_icons/symnum_10.png";
 import iconPermitMarkerImage from "@/assets/map_icons/symnum_11.png";
 import iconWellUrl from "@/assets/map_icons/symnum_9.png";
-import FilterPanel from './components/FilterPanel';
+import FilterPanel from "./components/FilterPanel";
 import DataFilterPanel from "./components/DataFilterPanel";
 import Loader from "./components/Loader";
 import debounce from "lodash/debounce";
 
-import TilePanel from './components/TilePanel';
-import PopupContent from './components/PopupContent';
+import TilePanel from "./components/TilePanel";
+import PopupContent from "./components/PopupContent";
 
-import axios from 'axios';
-import Qs from 'qs';
+import axios from "axios";
+import Qs from "qs";
 
 export default {
   components: {
@@ -199,7 +200,7 @@ export default {
       well_points_data: {},
       well_lines_data: {},
       parsed_data: {},
-      currentCenter: [32.000000, -102.000000],
+      currentCenter: [32.0, -102.0],
       iconWidth: 15,
       iconHeight: 15,
       api_number: "",
@@ -292,20 +293,19 @@ export default {
         const vm_this = this;
         this.map.on(
           "dragend",
-          debounce(function () {
+          debounce(function() {
             vm_this.fetchBackendData("dragend");
           }, DEBOUNCE_TIME)
         );
         this.map.on(
           "zoomend",
-          debounce(function () {
+          debounce(function() {
             vm_this.fetchBackendData("zoomend");
           }, DEBOUNCE_TIME)
         );
       }
     },
     fetchBackendData(event) {
-
       if (this.zoom < 12) {
         return;
       }
@@ -364,7 +364,7 @@ export default {
               },
             }
           )
-          .then(function (response) {
+          .then(function(response) {
             vm.well_data_json = null;
             vm.geo_json_data = null;
 
@@ -374,10 +374,10 @@ export default {
               vm.survey_abspt_points = response.data.survey_abspt_points;
             }
           })
-          .catch(function (error) {
+          .catch(function(error) {
             console.log(error);
           })
-          .then(function () {
+          .then(function() {
             // always executed
             vm.show_survey_abspt_loader = false;
             vm.enable_change = true;
@@ -406,17 +406,17 @@ export default {
               },
             }
           )
-          .then(function (response) {
+          .then(function(response) {
             if (response.data.result && response.data.result == "error") {
               console.log("error");
             } else {
               vm.survey_p_data = response.data.survey_p_data;
             }
           })
-          .catch(function (error) {
+          .catch(function(error) {
             console.log(error);
           })
-          .then(function () {
+          .then(function() {
             // always executed
             vm.show_survey_p_data_loader = false;
             vm.enable_change = true;
@@ -444,17 +444,17 @@ export default {
               },
             }
           )
-          .then(function (response) {
+          .then(function(response) {
             if (response.data.result && response.data.result == "error") {
               console.log("error");
             } else {
               vm.survey_l_data = response.data.survey_l_data;
             }
           })
-          .catch(function (error) {
+          .catch(function(error) {
             console.log(error);
           })
-          .then(function () {
+          .then(function() {
             // always executed
             vm.show_survey_l_data_loader = false;
             vm.enable_change = true;
@@ -483,17 +483,17 @@ export default {
               },
             }
           )
-          .then(function (response) {
+          .then(function(response) {
             if (response.data.result && response.data.result == "error") {
               console.log("error");
             } else {
               vm.well_lines_data = response.data.well_lines_data;
             }
           })
-          .catch(function (error) {
+          .catch(function(error) {
             console.log(error);
           })
-          .then(function () {
+          .then(function() {
             // always executed
             vm.show_well_lines_data_loader = false;
             vm.enable_change = true;
@@ -522,17 +522,17 @@ export default {
               },
             }
           )
-          .then(function (response) {
+          .then(function(response) {
             if (response.data.result && response.data.result == "error") {
               console.log("error");
             } else {
               vm.well_points_data = response.data.well_points_data;
             }
           })
-          .catch(function (error) {
+          .catch(function(error) {
             console.log(error);
           })
-          .then(function () {
+          .then(function() {
             // always executed
             vm.show_well_points_data_loader = false;
             vm.enable_change = true;
