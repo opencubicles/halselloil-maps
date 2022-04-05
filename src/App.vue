@@ -12,13 +12,12 @@
         preferCanvas: true,
         doubleClickZoom: false,
         //dragging: this.enable_change,
-        zoomControl: false,
+        zoomControl: false
       }"
       @ready="refresh"
       @update:center="centerUpdate"
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
-    
 
       <l-control position="topleft">
         <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
@@ -138,7 +137,7 @@ import {
   LIcon,
   LFeatureGroup,
   LControl,
-  LControlZoom,
+  LControlZoom
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import "@/assets/css/map.css";
@@ -170,7 +169,7 @@ export default {
     LFeatureGroup,
     FilterPanel,
     DataFilterPanel,
-    Loader,
+    Loader
   },
 
   data() {
@@ -214,12 +213,14 @@ export default {
       tiles: [
         {
           name: "OpenStreetMap",
-          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          url:
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}?access_token={accessToken}",
           options: {
-            maxZoom: 19,
-            attribution:
-              '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          },
+            maxZoom: 18,
+            accessToken:
+              "AAPK58bbc50dd13548f6bf6bd4612a4985bbfE54_c5swxaiy_PRJUf0Y2gKkGyVM_1QTy57NlmhD4k_JMPGRhtjg7VjQEwHkwWI",
+            attribution: "Tiles &copy; Esri"
+          }
         },
         {
           name: "OpenTopoMap",
@@ -227,12 +228,12 @@ export default {
           options: {
             maxZoom: 17,
             attribution:
-              'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-          },
-        },
+              'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+          }
+        }
       ],
 
-      currentTile: 0,
+      currentTile: 0
     };
   },
 
@@ -259,7 +260,7 @@ export default {
     },
     tileOptions() {
       return this.tiles[this.currentTile].options;
-    },
+    }
   },
   methods: {
     openPopUp(latLng, parsed_data) {
@@ -337,7 +338,7 @@ export default {
         north_west_lng: northWest.lng,
         south_east_lat: southEast.lat,
         south_east_lng: southEast.lng,
-        api_number: this.api_number,
+        api_number: this.api_number
       };
       this.survey_abspt_points = null;
       this.survey_p_data = null;
@@ -355,9 +356,9 @@ export default {
             {
               cancelToken: this.axiosCancelToken.token,
               params: par,
-              paramsSerializer: (params) => {
+              paramsSerializer: params => {
                 return qs.stringify(params);
-              },
+              }
             }
           )
           .then(function(response) {
@@ -386,7 +387,7 @@ export default {
           north_west_lng: northWest.lng,
           south_east_lat: southEast.lat,
           south_east_lng: southEast.lng,
-          api_number: this.api_number,
+          api_number: this.api_number
         };
         par["show_survey_p_data"] = this.show_survey_p_data;
 
@@ -397,9 +398,9 @@ export default {
             {
               cancelToken: this.axiosCancelToken.token,
               params: par,
-              paramsSerializer: (params) => {
+              paramsSerializer: params => {
                 return qs.stringify(params);
-              },
+              }
             }
           )
           .then(function(response) {
@@ -425,7 +426,7 @@ export default {
           north_west_lng: northWest.lng,
           south_east_lat: southEast.lat,
           south_east_lng: southEast.lng,
-          api_number: this.api_number,
+          api_number: this.api_number
         };
         par["show_survey_l_data"] = this.show_survey_l_data;
         this.show_survey_l_data_loader = true;
@@ -435,9 +436,9 @@ export default {
             {
               cancelToken: this.axiosCancelToken.token,
               params: par,
-              paramsSerializer: (params) => {
+              paramsSerializer: params => {
                 return qs.stringify(params);
-              },
+              }
             }
           )
           .then(function(response) {
@@ -463,7 +464,7 @@ export default {
           north_west_lng: northWest.lng,
           south_east_lat: southEast.lat,
           south_east_lng: southEast.lng,
-          api_number: this.api_number,
+          api_number: this.api_number
         };
         par["show_well_lines_data"] = this.show_well_lines_data;
 
@@ -474,9 +475,9 @@ export default {
             {
               cancelToken: this.axiosCancelToken.token,
               params: par,
-              paramsSerializer: (params) => {
+              paramsSerializer: params => {
                 return qs.stringify(params);
-              },
+              }
             }
           )
           .then(function(response) {
@@ -502,7 +503,7 @@ export default {
           north_west_lng: northWest.lng,
           south_east_lat: southEast.lat,
           south_east_lng: southEast.lng,
-          api_number: this.api_number,
+          api_number: this.api_number
         };
         par["show_well_points_data"] = this.show_well_points_data;
 
@@ -513,9 +514,9 @@ export default {
             {
               cancelToken: this.axiosCancelToken.token,
               params: par,
-              paramsSerializer: (params) => {
+              paramsSerializer: params => {
                 return qs.stringify(params);
-              },
+              }
             }
           )
           .then(function(response) {
@@ -534,8 +535,8 @@ export default {
             vm.enable_change = true;
           });
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
