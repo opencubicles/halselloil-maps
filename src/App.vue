@@ -87,7 +87,7 @@
             v-for="each_wellline in well_lines_data"
             :key="each_wellline._id"
             :lat-lngs="each_wellline._source.geometry.coordinates"
-            color="purple"
+            color="grey"
             @click="
               openPopUp(
                 each_wellline._source.geometry.coordinates[0],
