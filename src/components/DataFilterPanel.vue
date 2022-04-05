@@ -43,7 +43,7 @@
         ></div>
     </transition>
 
-    <transition name="slide" appear>
+    <transition name="fade" appear>
         <div class="data-filter-modal" v-if="showDataFilterModal">
             <div class="pop-header pointer-off">
                 <div class="header-items-left">
@@ -452,7 +452,7 @@
         ></div>
     </transition>
 
-    <transition name="slide" appear>
+    <transition name="fade" appear>
         <div class="data-filter-modal" v-if="showLayerModal">
             <div class="pop-header">
                 <div class="header-items-left">
