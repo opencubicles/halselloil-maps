@@ -68,12 +68,8 @@
             "
           >
           
-            <l-icon v-if="[4,9,10,11].includes(each_wellpoint._source.properties.SYMNUM)"
-              :icon-url="require(`@/assets/map_icons/symnum_${each_wellpoint._source.properties.SYMNUM}.png`) ?? ``"
-              :icon-size="iconSize"
-            />
-            <l-icon v-else
-              :icon-url="require(`@/assets/map_icons/symnum_9.png`)"
+            <l-icon 
+              :icon-url="getMarkerIcon(each_wellpoint._source.properties.SYMNUM)"
               :icon-size="iconSize"
             />
             
@@ -237,6 +233,7 @@ export default {
 
       currentTile: 0
     };
+
   },
 
   computed: {
@@ -244,7 +241,7 @@ export default {
       return iconImage;
     },
     show_loader() {
-      return this.show_survey_p_data_loader;
+      return this.show_well_points_data_loader;
     },
 
     iconPermitMarkerImage() {
@@ -269,6 +266,18 @@ export default {
       this.parsed_data = parsed_data;
 
       this.$refs.features.leafletObject.openPopup(latLng);
+    },
+
+    getMarkerIcon(symnum) {
+      
+      
+        try {
+          return require(`@/assets/map_icons/symnum_${symnum}.png`)
+        } catch (e) {
+
+          return require(`@/assets/map_icons/symnum_9.png`)
+          
+        }
     },
 
     centerUpdate(center) {
