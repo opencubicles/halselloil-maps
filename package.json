@@ -16,6 +16,7 @@
     "core-js": "^3.21.1",
     "esri-leaflet": "^3.0.7",
     "leaflet": "^1.7.1",
+    "pinia": "^2.0.13",
     "qs": "^6.10.3",
     "vue": "^3.2.31",
     "vue-final-modal": "^3.4.3"
