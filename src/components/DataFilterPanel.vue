@@ -8,8 +8,7 @@
                 class="menu-list map-widget"
                 tooltip-title="Data Filters"
                 @click="
-                    toggleModal();
-                    showDataFilterModal = true;
+                    openedModal = 'filterModal'
                 "
             >
                 <i class="menu-list-icons settings-slider-icon"></i>
@@ -18,8 +17,7 @@
                 class="menu-list map-widget"
                 tooltip-title="Layers"
                 @click="
-                    toggleModal();
-                    showLayerModal = true;
+                    openedModal = 'layerModal'
                 "
             >
                 <i class="menu-list-icons layers-icon"></i>
@@ -39,12 +37,12 @@
         <div
             class=""
             v-if="showDataFilterModal"
-            @click="showDataFilterModal = false"
+            @click="openedModal = ''"
         ></div>
     </transition>
 
     <transition name="fade" appear>
-        <div class="data-filter-modal" v-if="showDataFilterModal">
+        <div class="data-filter-modal" v-if="openedModal == 'filterModal' ">
             <div class="pop-header pointer-off">
                 <div class="header-items-left">
                     <label class="pop-header-label">
@@ -55,7 +53,7 @@
                     <button
                         class="btn btn-md2 btn-primary data-filter-header-btn pointer-on"
                         id="filter-oil-data"
-                        @click="showDataFilterModal = false"
+                        @click="openedModal = ''"
                     >
                         Apply
                     </button>
@@ -448,12 +446,13 @@
         <div
             class=""
             v-if="showLayerModal"
-            @click="showLayerModal = false"
+            @click="openedModal = ''"
         ></div>
+
     </transition>
 
     <transition name="fade" appear>
-        <div class="data-filter-modal" v-if="showLayerModal">
+        <div class="data-filter-modal" v-if="openedModal == 'layerModal' ">
             <div class="pop-header">
                 <div class="header-items-left">
                     <label class="pop-header-label">
@@ -464,7 +463,7 @@
                     <button
                         class="btn btn-md2 btn-primary data-filter-header-btn pointer-on"
                         id="filter-oil-data"
-                        @click="showLayerModal = false"
+                        @click="openedModal = ''"
                     >
                         Apply
                     </button>
@@ -638,8 +637,7 @@ export default {
     components: {},
     data() {
         return {
-            showDataFilterModal: false,
-            showLayerModal: false,
+            openedModal: ''
         };
     },
 
@@ -648,10 +646,7 @@ export default {
         changeTile() {
             this.$emit("change-tile", event.target.value);
         },
-        toggleModal() {
-            this.showLayerModal = false;
-            this.showDataFilterModal = false;
-        },
+        
     },
     inheritAttrs: false,
 };
