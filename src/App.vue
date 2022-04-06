@@ -67,17 +67,19 @@
               )
             "
           >
-            <l-icon
-              v-if="each_wellpoint._source.properties.SYMNUM == 4"
-              :icon-url="iconWellUrl"
+          
+            <l-icon v-if="[4,9,10,11].includes(each_wellpoint._source.properties.SYMNUM)"
+              :icon-url="require(`@/assets/map_icons/symnum_${each_wellpoint._source.properties.SYMNUM}.png`) ?? ``"
               :icon-size="iconSize"
             />
-            <l-icon
-              v-if="each_wellpoint._source.properties.SYMNUM != 4"
-              :icon-url="iconWellUrl"
+            <l-icon v-else
+              :icon-url="require(`@/assets/map_icons/symnum_9.png`)"
               :icon-size="iconSize"
             />
+            
+
           </l-marker>
+          
         </template>
         <template v-if="well_lines_data && show_well_lines_data && zoom >= 14"
           ><!--smoothFactor incrases, performance increases, detail decreases-->
