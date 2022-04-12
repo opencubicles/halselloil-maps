@@ -1,10 +1,7 @@
 import { createApp } from 'vue'
+import { pinia } from './stores'
 import App from './App.vue'
-import 'bootstrap' 
 
-createApp(App).mount('#app')
+const app = createApp(App).use(pinia)
 
-
-
-
-
+app.mount('#app')

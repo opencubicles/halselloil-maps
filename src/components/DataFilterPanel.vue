@@ -42,7 +42,7 @@
     </transition>
 
     <transition name="fade" appear>
-        <div class="data-filter-modal" v-if="openedModal == 'filterModal' ">
+        <div class="data-filter-modal" v-show="openedModal == 'filterModal' ">
             <div class="pop-header pointer-off">
                 <div class="header-items-left">
                     <label class="pop-header-label">
@@ -452,7 +452,7 @@
     </transition>
 
     <transition name="fade" appear>
-        <div class="data-filter-modal" v-if="openedModal == 'layerModal' ">
+        <div class="data-filter-modal" v-show="openedModal == 'layerModal' ">
             <div class="pop-header">
                 <div class="header-items-left">
                     <label class="pop-header-label">
@@ -463,7 +463,7 @@
                     <button
                         class="btn btn-md2 btn-primary data-filter-header-btn pointer-on"
                         id="filter-oil-data"
-                        @click="openedModal = ''"
+                        @click="applyFilters"
                     >
                         Apply
                     </button>
@@ -509,7 +509,9 @@
                                 <input
                                     class="form-check-input switch-visible"
                                     type="checkbox"
-                                    id="flexSwitchCheckCheckedSurvey"
+                                    checked
+                                    
+                                    @click="layers.toggleLayer('survey-layers')"
                                     value="surv"
                                 />
                             </div>
@@ -633,7 +635,22 @@
 </template>
 
 <script>
-export default {
+
+import { ref, defineComponent } from 'vue'
+import { useFiltersStore } from '../stores/filters'
+
+export default defineComponent({
+    setup() {
+        const layers = useFiltersStore()
+
+        const layer = ref('')
+        window.stores = { layers}
+
+        return {
+            layer,
+            layers
+        }
+    },
     components: {},
     data() {
         return {
@@ -646,8 +663,13 @@ export default {
         changeTile() {
             this.$emit("change-tile", event.target.value);
         },
+        applyFilters(){
+            this.openedModal = '';
+            this.$parent.$parent.$emit("refresh");
+
+        }
         
     },
     inheritAttrs: false,
-};
+});
 </script>
