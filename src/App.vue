@@ -18,7 +18,8 @@
       @update:center="centerUpdate"
       @refresh="refresh"
     >
-     <l-protobuf />
+     <l-protobuf url="https://tileserver.opencubicles.com/{z}/{x}/{y}.pbf"
+      :options="options" />
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
 
       <l-control position="topleft">
