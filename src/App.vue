@@ -18,9 +18,10 @@
       @update:center="centerUpdate"
       @refresh="refresh"
     >
-     <l-protobuf url="https://tileserver.opencubicles.com/{z}/{x}/{y}.pbf"
-      :options="options" />
+     
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
+      <l-protobuf url="https://tileserver.opencubicles.com/{z}/{x}/{y}.pbf"
+      :options="options" />
 
       <l-control position="topleft">
         <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
@@ -136,9 +137,9 @@ export default defineComponent({
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom: 12,
-      prev_zoom: 12,
-      last_fetched_data_zoom: 12,
+      zoom: 6,
+      prev_zoom: 6,
+      last_fetched_data_zoom: 6,
       map: null,
       bounds: null,
       show: false,
@@ -295,7 +296,7 @@ export default defineComponent({
 
     refresh() {
       const DEBOUNCE_TIME = 600;
-      if (this.zoom >= 8) {
+      if (this.zoom >= 4) {
         this.fetchBackendData();
 
         const vm_this = this;
@@ -327,7 +328,7 @@ export default defineComponent({
         this.show_survey_l_data = false;
         this.show_survey_abspt = false;
       }
-      if (this.zoom < 6) {
+      if (this.zoom < 4) {
         return;
       }
       if (event == "zoomend" && this.prev_zoom < this.zoom) {
