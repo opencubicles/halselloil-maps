@@ -18,6 +18,7 @@
       @update:center="centerUpdate"
       @refresh="refresh"
     >
+     <l-protobuf />
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
 
       <l-control position="topleft">
@@ -106,6 +107,8 @@ import { useFiltersStore } from "./stores/filters";
 import axios from "axios";
 import Qs from "qs";
 
+import LProtobuf from "./components/LProtobuf.vue";
+
 export default defineComponent({
   setup() {
     const layers = useFiltersStore();
@@ -125,7 +128,8 @@ export default defineComponent({
     FilterPanel,
     DataFilterPanel,
     Loader,
-    LGeoJson
+    LGeoJson,
+    LProtobuf
   },
 
   data() {
