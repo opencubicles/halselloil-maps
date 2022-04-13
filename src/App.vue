@@ -1,6 +1,5 @@
 <template>
   <div style="height: 100vh; width: 100vw">
-    <loader v-show="show_loader"> </loader>
     <l-map
       v-model="zoom"
       v-model:zoom="zoom"
@@ -14,14 +13,54 @@
         //dragging: this.enable_change,
         zoomControl: false
       }"
+      :zoomAnimation="true"
+      :zoomAnimationThreshold="1"
+      :fadeAnimation="true"
+      :noBlockingAnimations="true"
       @ready="refresh"
-      @update:center="centerUpdate"
       @refresh="refresh"
+      @update:center="centerUpdate"
     >
-     
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
-      <l-protobuf url="https://tileserver.opencubicles.com/{z}/{x}/{y}.pbf"
-      :options="options" />
+      <l-protobuf
+        v-if="survey_block_layer"
+        :options="optionsSurveyBlocks"
+        :properties="protoOptions"
+        layer="survey_block_layer"
+      />
+      <l-protobuf
+        v-if="survey_section_layer"
+        :options="optionsSurveySections"
+        :properties="protoOptions"
+        layer="survey_section_layer"
+      />
+
+      <l-protobuf
+        v-if="survey_lines_layer"
+        :options="optionsSurveyLines"
+        :properties="protoOptions"
+        layer="survey_lines_layer"
+      />
+      <l-protobuf
+        v-if="survey_points_layer"
+        :options="optionsSurveyPoints"
+        :properties="protoOptions"
+        layer="survey_points_layer"
+      />
+
+      <l-protobuf
+        v-if="well_lines_layer"
+        :options="optionsWellLines"
+        :properties="protoOptions"
+        layer="well_lines_layer"
+      />
+
+      <l-protobuf
+        v-if="well_points_layer"
+        :options="optionsWellPoints"
+        :properties="protoOptions"
+        layer="well_points_layer"
+      />
 
       <l-control position="topleft">
         <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
@@ -34,49 +73,6 @@
       </l-control>
 
       <l-control-zoom position="bottomright"></l-control-zoom>
-
-      <l-feature-group ref="features">
-        <l-popup :options="{ autoPan: false }">
-          <popup-content :parsed_data="parsed_data"> </popup-content>
-        </l-popup>
-      </l-feature-group>
-
-      <l-feature-group ref="featureGroup">
-        <template v-if="survey_abspt_points && show_survey_abspt">
-          <l-geo-json :geojson="survey_abspt_points"> </l-geo-json>
-          
-        </template>
-        <template v-if="well_points_data && show_well_points_data">
-          <l-geo-json :geojson="well_points_data"> </l-geo-json>
-          
-        </template>
-        <template v-if="well_lines_data && show_well_lines_data">
-          <l-geo-json :geojson="well_lines_data"> </l-geo-json>
-        </template>
-
-        <template v-if="survey_p_data && show_survey_p_data">
-          
-
-          <l-geo-json :geojson="survey_p_data" :options="options"> </l-geo-json>
-
-          <l-geo-json
-            v-if="survey_group_data"
-            :geojson="survey_group_data"
-            :options="options2"
-          >
-          </l-geo-json>
-
-          
-        </template>
-        <template v-if="survey_l_data && show_survey_l_data">
-          <l-geo-json
-            :geojson="survey_l_data"
-            :options="options2"
-            :options-style="styleFunction"
-          ></l-geo-json>
-          
-        </template>
-      </l-feature-group>
     </l-map>
   </div>
 </template>
@@ -85,29 +81,17 @@
 import {
   LMap,
   LTileLayer,
-  LPopup,
-  LFeatureGroup,
   LControl,
-  LGeoJson,
   LControlZoom
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import "@/assets/css/map.css";
-import iconImage from "@/assets/map_icons/symnum_10.png";
-import iconPermitMarkerImage from "@/assets/map_icons/symnum_11.png";
-import iconWellUrl from "@/assets/map_icons/symnum_9.png";
 import FilterPanel from "./components/FilterPanel";
 import DataFilterPanel from "./components/DataFilterPanel";
-import Loader from "./components/Loader";
 import debounce from "lodash/debounce";
-
-import PopupContent from "./components/PopupContent";
 
 import { defineComponent } from "vue";
 import { useFiltersStore } from "./stores/filters";
-
-import axios from "axios";
-import Qs from "qs";
 
 import LProtobuf from "./components/LProtobuf.vue";
 
@@ -124,54 +108,30 @@ export default defineComponent({
     LTileLayer,
     LControl,
     LControlZoom,
-    LPopup,
-    PopupContent,
-    LFeatureGroup,
     FilterPanel,
     DataFilterPanel,
-    Loader,
-    LGeoJson,
     LProtobuf
   },
 
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom: 6,
-      prev_zoom: 6,
-      last_fetched_data_zoom: 6,
+      zoom: 14,
+      prev_zoom: 14,
+      last_fetched_data_zoom: 14,
       map: null,
       bounds: null,
-      show: false,
-      show_survey_abspt: false,
-      show_survey_p_data: true,
-      show_survey_l_data: false,
-      enable_change: true,
-      show_well_points_data: false,
-      show_well_lines_data: false,
-      showModal: false,
-      survey_abspt_points: {},
-      survey_p_data: {},
-      survey_group_data: {},
-      survey_l_data: {},
-      well_points_data: {},
-      well_lines_data: {},
+      survey_block_layer: false,
+      survey_section_layer: false,
+      survey_points_layer: false,
+      survey_lines_layer: false,
+      well_points_layer: false,
+      well_lines_layer: true,
+      survey_block_layer_key: 0,
       parsed_data: {},
       currentCenter: [32.01579054148046, -102.0183563232422],
-      iconWidth: 15,
-      iconHeight: 15,
       api_number: "",
       operator_name: "",
-      show_survey_abspt_loader: true,
-
-      show_survey_p_data_loader: true,
-
-      show_survey_l_data_loader: true,
-
-      show_well_points_data_loader: true,
-
-      show_well_lines_data_loader: true,
-      enableTooltip: true,
       tiles: [
         {
           name: "OpenStreetMap",
@@ -200,63 +160,59 @@ export default defineComponent({
   },
 
   computed: {
-    options() {
+    optionsSurveySections() {
       return {
-        onEachFeature: this.onEachFeatureFunction
+        weight: 2,
+        color: "red",
+        fillColor: "rgba(124,240,10,0.5)",
+        fillOpacity: 0
       };
     },
-    onEachFeatureFunction() {
-      if (!this.enableTooltip) {
-        return () => {};
-      }
-      return (feature, layer) => {
-        layer.setStyle({ weight: "1" });
-        layer.setStyle({ color: "grey" });
-
-        // layer.bindTooltip(
-        //   "<div>"+feature.properties.LEVEL2_BLO+"</div>",
-        //   { permanent: true, sticky: false }
-        // );
-      };
-    },
-
-    options2() {
+    optionsWellLines() {
       return {
-        onEachFeature: this.onEachFeatureFunction2
+        weight: 2,
+        color: "grey",
+        fillColor: "rgba(124,240,10,0.5)",
+        fillOpacity: 0
+      };
+    },
+    optionsWellPoints() {
+      return {
+        color: "yellow"
+      };
+    },
+    optionsSurveyBlocks() {
+      return {
+        weight: 4,
+        fillColor: "rgba(124,240,10,0.5)",
+        fillOpacity: 0,
+        color: "black"
       };
     },
 
-    onEachFeatureFunction2() {
-      if (!this.enableTooltip) {
-        return () => {};
-      }
-      return (feature, layer) => {
-        layer.setStyle({ fillColor: "white" });
-        layer.setStyle({ fillOpacity: "0" });
-        layer.setStyle({ color: "black" });
-
-        layer.bindTooltip("<div>BLK: " + feature.properties.block + "</div>", {
-          permanent: true,
-          sticky: true
-        });
+    optionsSurveyLines() {
+      return {
+        weight: 0.5,
+        color: "blue"
       };
     },
-    iconUrl() {
-      return iconImage;
-    },
-    show_loader() {
-      return false;
-    },
-
-    iconPermitMarkerImage() {
-      return iconPermitMarkerImage;
-    },
-    iconWellUrl() {
-      return iconWellUrl;
+    optionsSurveyPoints() {
+      return {
+        color: "black"
+      };
     },
 
-    iconSize() {
-      return [this.iconWidth, this.iconHeight];
+    protoOptions() {
+      var bounds_cords = this.$refs.map.leafletObject.getBounds();
+      var northWest = bounds_cords.getNorthWest(),
+        southEast = bounds_cords.getSouthEast();
+
+      return {
+        north_west_lat: northWest.lat,
+        north_west_lng: northWest.lng,
+        south_east_lat: southEast.lat,
+        south_east_lng: southEast.lng
+      };
     },
     tileUrl() {
       return this.tiles[this.currentTile].url;
@@ -266,20 +222,6 @@ export default defineComponent({
     }
   },
   methods: {
-    openPopUp(latLng, parsed_data) {
-      this.parsed_data = parsed_data;
-
-      this.$refs.features.leafletObject.openPopup(latLng);
-    },
-
-    getMarkerIcon(symnum) {
-      try {
-        return require(`@/assets/map_icons/symnum_${symnum}.png`);
-      } catch (e) {
-        return require(`@/assets/map_icons/symnum_9.png`);
-      }
-    },
-
     centerUpdate(center) {
       this.currentCenter = center;
       console.log(center);
@@ -295,10 +237,11 @@ export default defineComponent({
     },
 
     refresh() {
-      const DEBOUNCE_TIME = 600;
+      this.map = this.$refs.map.leafletObject;
+      this.bounds = this.map.getBounds();
       if (this.zoom >= 4) {
         this.fetchBackendData();
-
+        const DEBOUNCE_TIME = 100;
         const vm_this = this;
         this.map.on(
           "dragend",
@@ -315,19 +258,6 @@ export default defineComponent({
       }
     },
     fetchBackendData(event) {
-      console.log();
-
-      const i = this.layers.showLayers.lastIndexOf("survey-layers");
-      if (i > -1) {
-        this.show_survey_p_data = true;
-
-        this.show_survey_l_data = false;
-        this.show_survey_abspt = false;
-      } else {
-        this.show_survey_p_data = false;
-        this.show_survey_l_data = false;
-        this.show_survey_abspt = false;
-      }
       if (this.zoom < 4) {
         return;
       }
@@ -344,225 +274,79 @@ export default defineComponent({
       }
       this.last_fetched_data_zoom = this.zoom;
 
-      if (typeof this.axiosCancelToken !== typeof undefined) {
-        this.axiosCancelToken.cancel("Cancelled due to request override");
+      let show_any_survey_layers = this.layers.showLayers.lastIndexOf(
+        "survey-layers"
+      );
+      if (show_any_survey_layers > -1) {
+        let show_survey_block_layer = this.layers.showLayers.lastIndexOf(
+          "survey-block-layer"
+        );
+
+        if (show_survey_block_layer > -1) {
+          this.survey_block_layer = true;
+        } else {
+          this.survey_block_layer = false;
+        }
+
+        let show_survey_section_layer = this.layers.showLayers.lastIndexOf(
+          "survey-section-layer"
+        );
+
+        if (show_survey_section_layer > -1) {
+          this.survey_section_layer = true;
+        } else {
+          this.survey_section_layer = false;
+        }
+
+        let show_survey_points_layer = this.layers.showLayers.lastIndexOf(
+          "survey-points-layer"
+        );
+
+        if (show_survey_points_layer > -1) {
+          this.survey_points_layer = true;
+        } else {
+          this.survey_points_layer = false;
+        }
+
+        let show_survey_lines_layer = this.layers.showLayers.lastIndexOf(
+          "survey-lines-layer"
+        );
+
+        if (show_survey_lines_layer > -1) {
+          this.survey_lines_layer = true;
+        } else {
+          this.survey_lines_layer = false;
+        }
+      } else {
+        this.survey_block_layer = false;
+        this.survey_lines_layer = false;
+        this.survey_points_layer = false;
+        this.survey_section_layer = false;
       }
 
-      this.axiosCancelToken = axios.CancelToken.source();
-      this.map = this.$refs.map.leafletObject;
-      this.bounds_cords = this.map.getBounds();
-      var bounds_cords = this.bounds_cords;
-
-      var northWest = bounds_cords.getNorthWest(),
-        southEast = bounds_cords.getSouthEast();
-
-      var qs = Qs;
-      var vm = this;
-      var par = {
-        north_west_lat: northWest.lat,
-        north_west_lng: northWest.lng,
-        south_east_lat: southEast.lat,
-        south_east_lng: southEast.lng,
-        api_number: this.api_number
-      };
-      this.survey_abspt_points = null;
-      this.survey_p_data = null;
-      this.survey_group_data = null;
-      this.survey_l_data = null;
-      this.well_points_data = null;
-      this.well_lines_data = null;
-      this.enable_change = false;
-      if (this.show_survey_abspt) {
-        par["show_survey_abspt"] = this.show_survey_abspt;
-
-        this.show_survey_abspt_loader = true;
-        axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/leaflet_helper.php",
-            {
-              cancelToken: this.axiosCancelToken.token,
-              params: par,
-              paramsSerializer: params => {
-                return qs.stringify(params);
-              }
-            }
-          )
-          .then(function(response) {
-            vm.well_data_json = null;
-            vm.geo_json_data = null;
-
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.survey_abspt_points = response.data;
-            }
-          })
-          .catch(function(error) {
-            console.log(error);
-          })
-          .then(function() {
-            // always executed
-            vm.show_survey_abspt_loader = false;
-            vm.enable_change = true;
-          });
-      }
-
-      if (this.show_survey_p_data) {
-        par = {
-          north_west_lat: northWest.lat,
-          north_west_lng: northWest.lng,
-          south_east_lat: southEast.lat,
-          south_east_lng: southEast.lng,
-          api_number: this.api_number
-        };
-        par["show_survey_p_data"] = this.show_survey_p_data;
-
-        this.show_survey_p_data_loader = true;
-        axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/layer_helper.php",
-            {
-              cancelToken: this.axiosCancelToken.token,
-              params: par,
-              paramsSerializer: params => {
-                return qs.stringify(params);
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.survey_p_data = response.data.survey_p_data;
-              vm.survey_group_data = response.data.survey_group_data;
-            }
-          })
-          .catch(function(error) {
-            console.log(error);
-          })
-          .then(function() {
-            // always executed
-            vm.show_survey_p_data_loader = false;
-            vm.enable_change = true;
-          });
-      }
-
-      if (this.show_survey_l_data) {
-        par = {
-          north_west_lat: northWest.lat,
-          north_west_lng: northWest.lng,
-          south_east_lat: southEast.lat,
-          south_east_lng: southEast.lng,
-          api_number: this.api_number
-        };
-        par["show_survey_l_data"] = this.show_survey_l_data;
-        this.show_survey_l_data_loader = true;
-        axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/leaflet_helper.php",
-            {
-              cancelToken: this.axiosCancelToken.token,
-              params: par,
-              paramsSerializer: params => {
-                return qs.stringify(params);
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              console.log(response.data.survey_l_data);
-              vm.survey_l_data = response.data.survey_l_data;
-            }
-          })
-          .catch(function(error) {
-            console.log(error);
-          })
-          .then(function() {
-            // always executed
-            vm.show_survey_l_data_loader = false;
-            vm.enable_change = true;
-          });
-      }
-
-      if (this.show_well_lines_data && this.zoom >= 8) {
-        par = {
-          north_west_lat: northWest.lat,
-          north_west_lng: northWest.lng,
-          south_east_lat: southEast.lat,
-          south_east_lng: southEast.lng,
-          api_number: this.api_number
-        };
-        par["show_well_lines_data"] = this.show_well_lines_data;
-
-        this.show_well_lines_data_loader = true;
-        axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/leaflet_helper.php",
-            {
-              cancelToken: this.axiosCancelToken.token,
-              params: par,
-              paramsSerializer: params => {
-                return qs.stringify(params);
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.well_lines_data = response.data;
-            }
-          })
-          .catch(function(error) {
-            console.log(error);
-          })
-          .then(function() {
-            // always executed
-            vm.show_well_lines_data_loader = false;
-            vm.enable_change = true;
-          });
-      }
-
-      if (this.show_well_points_data && this.zoom >= 8) {
-        par = {
-          north_west_lat: northWest.lat,
-          north_west_lng: northWest.lng,
-          south_east_lat: southEast.lat,
-          south_east_lng: southEast.lng,
-          api_number: this.api_number
-        };
-        par["show_well_points_data"] = this.show_well_points_data;
-
-        this.show_well_points_data_loader = true;
-        axios
-          .get(
-            "https://dev-halselloil.opencubicles.com/search_data/leaflet_helper.php",
-            {
-              cancelToken: this.axiosCancelToken.token,
-              params: par,
-              paramsSerializer: params => {
-                return qs.stringify(params);
-              }
-            }
-          )
-          .then(function(response) {
-            if (response.data.result && response.data.result == "error") {
-              console.log("error");
-            } else {
-              vm.well_points_data = response.data;
-            }
-          })
-          .catch(function(error) {
-            console.log(error);
-          })
-          .then(function() {
-            // always executed
-            vm.show_well_points_data_loader = false;
-            vm.enable_change = true;
-          });
-      }
+      // if(this.survey_block_layer){
+      //   this.survey_block_layer += 1;
+      // }
+      // if(this.survey_section_layer){
+      //   this.survey_section_layer = false
+      //   this.survey_section_layer = true
+      // }
+      // if(this.survey_lines_layer){
+      //   this.survey_lines_layer = false
+      //   this.survey_lines_layer = true
+      // }
+      // if(this.survey_points_layer){
+      //   this.survey_points_layer = false
+      //   this.survey_points_layer = true
+      // }
+      // if(this.well_points_layer){
+      //   this.well_points_layer = false
+      //   this.well_points_layer = true
+      // }
+      // if(this.well_lines_layer){
+      //   this.well_lines_layer = false
+      //   this.well_lines_layer = true
+      // }
     }
   }
 });

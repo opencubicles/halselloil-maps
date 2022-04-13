@@ -517,7 +517,7 @@
                             </div>
                             <i
                                 class="expand-icons arrow-expand-icon pointer-on"
-                                onClick="javascript:void(0)"
+                                
                             ></i>
                         </div>
                     </summary>
@@ -560,6 +560,8 @@
                                         type="checkbox"
                                         value="pls_township"
                                         id="flexSwitchTownship"
+                                        checked
+                                        @click="layers.toggleLayer('survey-block-layer')"
                                     />
                                 </div>
                             </div>
@@ -581,6 +583,8 @@
                                         type="checkbox"
                                         value="pls_abstract"
                                         id="flexSwitchAbstract"
+                                        checked
+                                        @click="layers.toggleLayer('survey-section-layer')"
                                     />
                                 </div>
                             </div>
@@ -602,6 +606,8 @@
                                         type="checkbox"
                                         value="pls_intersected"
                                         id="flexSwitchIntersected"
+                                        checked
+                                        @click="layers.toggleLayer('survey-lines-layer')"
                                     />
                                 </div>
                             </div>
@@ -623,6 +629,8 @@
                                         type="checkbox"
                                         value="tx_surveys"
                                         id="flexSwitchCheckCheckedTexasSurvey"
+                                        checked
+                                        @click="layers.toggleLayer('survey-points-layer')"
                                     />
                                 </div>
                             </div>

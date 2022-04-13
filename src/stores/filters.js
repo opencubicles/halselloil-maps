@@ -5,7 +5,11 @@ export const useFiltersStore = defineStore({
   id: 'filters',
   state: () => ({
     showLayers: [
-      'survey-layers'
+      'survey-layers',
+      'survey-block-layer',
+      'survey-section-layer',
+      'survey-lines-layer',
+      'survey-points-layer'
     ],
     applyFilters: false
   }),
