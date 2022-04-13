@@ -116,9 +116,9 @@ export default defineComponent({
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom: 14,
-      prev_zoom: 14,
-      last_fetched_data_zoom: 14,
+      zoom: 12,
+      prev_zoom: 12,
+      last_fetched_data_zoom: 12,
       map: null,
       bounds: null,
       survey_block_layer: false,
