@@ -19,7 +19,7 @@ export default {
     const params = new URLSearchParams(props.properties).toString();
 
     const tileServerURL =
-      "https://d2ykilsnx8d77z.cloudfront.net/{z}/{x}/{y}?layer=" +
+      "https://d2xhgfg6pp43w3.cloudfront.net/{z}/{x}/{y}?layer=" +
       props.layer +
       "&" +
       params;
