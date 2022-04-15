@@ -17,31 +17,31 @@ export default {
   },
   setup(props, context) {
     const params = new URLSearchParams(props.properties).toString();
-    console.log(props.options);
+
     const tileServerURL =
-      "https://tileserver.opencubicles.com/{z}/{x}/{y}.pbf?layer=" +
+      "https://uj6oqd54poaora4ooh5kng6rg40afjjw.lambda-url.us-west-1.on.aws/{z}/{x}/{y}?layer=" +
       props.layer +
       "&" +
       params;
+
     const leafletRef = ref({});
     const useGlobalLeaflet = inject(GLOBAL_LEAFLET_OPT);
     const addLayer = inject("addLayer");
     const { methods } = vectorLayerSetup(props, leafletRef, context);
     onMounted(async () => {
-    console.log('mounted');
+      console.log("mounted");
       const { DomEvent } = useGlobalLeaflet
         ? WINDOW_OR_GLOBAL.L
         : await import("leaflet/dist/leaflet-src.esm");
-      
+
       const vectorStyles = props.options;
       console.log(vectorStyles);
       leafletRef.value = L.vectorGrid.protobuf(tileServerURL, {
         interactive: true,
         vectorTileLayerStyles: {
-          geojsonLayer: vectorStyles
-          ,
+          geojsonLayer: vectorStyles,
           sliced: {
-            radius: 0.1,
+            radius: 0.1
           }
         }
       });

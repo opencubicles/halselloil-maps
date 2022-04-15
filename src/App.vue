@@ -23,40 +23,36 @@
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
       <l-protobuf
-        v-if="survey_block_layer"
-        :options="optionsSurveyBlocks"
+        :options="optionsSurveySections"
         :properties="protoOptions"
         layer="survey_block_layer"
       />
+
+      
       <l-protobuf
-        v-if="survey_section_layer"
         :options="optionsSurveySections"
         :properties="protoOptions"
         layer="survey_section_layer"
       />
 
       <l-protobuf
-        v-if="survey_lines_layer"
         :options="optionsSurveyLines"
         :properties="protoOptions"
         layer="survey_lines_layer"
       />
       <l-protobuf
-        v-if="survey_points_layer"
         :options="optionsSurveyPoints"
         :properties="protoOptions"
         layer="survey_points_layer"
       />
 
       <l-protobuf
-        v-if="well_lines_layer"
         :options="optionsWellLines"
         :properties="protoOptions"
         layer="well_lines_layer"
       />
 
       <l-protobuf
-        v-if="well_points_layer"
         :options="optionsWellPoints"
         :properties="protoOptions"
         layer="well_points_layer"
@@ -116,7 +112,7 @@ export default defineComponent({
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom: 12,
+      zoom:12,
       prev_zoom: 12,
       last_fetched_data_zoom: 12,
       map: null,
