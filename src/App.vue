@@ -11,7 +11,7 @@
         preferCanvas: true,
         doubleClickZoom: false,
         //dragging: this.enable_change,
-        zoomControl: false
+        zoomControl: false,
       }"
       :zoomAnimation="true"
       :zoomAnimationThreshold="1"
@@ -22,7 +22,34 @@
       @update:center="centerUpdate"
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
-   
+      <l-protobuf
+        :options="optionsSurveySections"
+        :properties="protoOptions"
+        layer="survey_block_layer"
+      />
+
+      <l-protobuf
+        :options="optionsSurveySections"
+        :properties="protoOptions"
+        layer="survey_section_layer"
+      />
+
+      <l-protobuf
+        :options="optionsSurveyLines"
+        :properties="protoOptions"
+        layer="survey_lines_layer"
+      />
+      <l-protobuf
+        :options="optionsSurveyPoints"
+        :properties="protoOptions"
+        layer="survey_points_layer"
+      />
+
+      <l-protobuf
+        :options="optionsWellLines"
+        :properties="protoOptions"
+        layer="well_lines_layer"
+      />
 
       <l-protobuf
         :options="optionsWellPoints"
@@ -50,7 +77,7 @@ import {
   LMap,
   LTileLayer,
   LControl,
-  LControlZoom
+  LControlZoom,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import "@/assets/css/map.css";
@@ -67,7 +94,7 @@ export default defineComponent({
   setup() {
     const layers = useFiltersStore();
     return {
-      layers
+      layers,
     };
   },
 
@@ -78,13 +105,13 @@ export default defineComponent({
     LControlZoom,
     FilterPanel,
     DataFilterPanel,
-    LProtobuf
+    LProtobuf,
   },
 
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom:12,
+      zoom: 8,
       prev_zoom: 6,
       last_fetched_data_zoom: 6,
       map: null,
@@ -103,14 +130,13 @@ export default defineComponent({
       tiles: [
         {
           name: "OpenStreetMap",
-          url:
-            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}?access_token={accessToken}",
+          url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}?access_token={accessToken}",
           options: {
             maxZoom: 18,
             accessToken:
               "AAPK58bbc50dd13548f6bf6bd4612a4985bbfE54_c5swxaiy_PRJUf0Y2gKkGyVM_1QTy57NlmhD4k_JMPGRhtjg7VjQEwHkwWI",
-            attribution: "Tiles &copy; Esri"
-          }
+            attribution: "Tiles &copy; Esri",
+          },
         },
         {
           name: "OpenTopoMap",
@@ -118,12 +144,12 @@ export default defineComponent({
           options: {
             maxZoom: 17,
             attribution:
-              'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-          }
-        }
+              'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+          },
+        },
       ],
 
-      currentTile: 0
+      currentTile: 0,
     };
   },
 
@@ -133,7 +159,9 @@ export default defineComponent({
         weight: 2,
         color: "red",
         fillColor: "rgba(124,240,10,0.5)",
-        fillOpacity: 0
+        fillOpacity: 0,
+        radius: 0.1,
+        strokeWidth: 0.1,
       };
     },
     optionsWellLines() {
@@ -141,12 +169,16 @@ export default defineComponent({
         weight: 2,
         color: "grey",
         fillColor: "rgba(124,240,10,0.5)",
-        fillOpacity: 0
+        fillOpacity: 0,
+        radius: 0.1,
+        strokeWidth: 0.1,
       };
     },
     optionsWellPoints() {
       return {
-        color: "yellow"
+        color: "yellow",
+        radius: 0.001,
+        strokeWidth: 0.001
       };
     },
     optionsSurveyBlocks() {
@@ -154,19 +186,25 @@ export default defineComponent({
         weight: 4,
         fillColor: "rgba(124,240,10,0.5)",
         fillOpacity: 0,
-        color: "black"
+        color: "black",
+        radius: 0.1,
+        strokeWidth: 0.1,
       };
     },
 
     optionsSurveyLines() {
       return {
         weight: 0.5,
-        color: "blue"
+        color: "blue",
+        radius: 0.1,
+        strokeWidth: 0.1,
       };
     },
     optionsSurveyPoints() {
       return {
-        color: "black"
+        color: "black",
+        radius: 0.1,
+        strokeWidth: 0.1,
       };
     },
 
@@ -179,7 +217,7 @@ export default defineComponent({
         north_west_lat: northWest.lat,
         north_west_lng: northWest.lng,
         south_east_lat: southEast.lat,
-        south_east_lng: southEast.lng
+        south_east_lng: southEast.lng,
       };
     },
     tileUrl() {
@@ -187,7 +225,7 @@ export default defineComponent({
     },
     tileOptions() {
       return this.tiles[this.currentTile].options;
-    }
+    },
   },
   methods: {
     centerUpdate(center) {
@@ -213,13 +251,13 @@ export default defineComponent({
         const vm_this = this;
         this.map.on(
           "dragend",
-          debounce(function() {
+          debounce(function () {
             vm_this.fetchBackendData("dragend");
           }, DEBOUNCE_TIME)
         );
         this.map.on(
           "zoomend",
-          debounce(function() {
+          debounce(function () {
             vm_this.fetchBackendData("zoomend");
           }, DEBOUNCE_TIME)
         );
@@ -242,13 +280,11 @@ export default defineComponent({
       }
       this.last_fetched_data_zoom = this.zoom;
 
-      let show_any_survey_layers = this.layers.showLayers.lastIndexOf(
-        "survey-layers"
-      );
+      let show_any_survey_layers =
+        this.layers.showLayers.lastIndexOf("survey-layers");
       if (show_any_survey_layers > -1) {
-        let show_survey_block_layer = this.layers.showLayers.lastIndexOf(
-          "survey-block-layer"
-        );
+        let show_survey_block_layer =
+          this.layers.showLayers.lastIndexOf("survey-block-layer");
 
         if (show_survey_block_layer > -1) {
           this.survey_block_layer = true;
@@ -276,9 +312,8 @@ export default defineComponent({
           this.survey_points_layer = false;
         }
 
-        let show_survey_lines_layer = this.layers.showLayers.lastIndexOf(
-          "survey-lines-layer"
-        );
+        let show_survey_lines_layer =
+          this.layers.showLayers.lastIndexOf("survey-lines-layer");
 
         if (show_survey_lines_layer > -1) {
           this.survey_lines_layer = true;
@@ -315,8 +350,8 @@ export default defineComponent({
       //   this.well_lines_layer = false
       //   this.well_lines_layer = true
       // }
-    }
-  }
+    },
+  },
 });
 </script>
 
