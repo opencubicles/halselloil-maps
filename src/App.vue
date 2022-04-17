@@ -209,15 +209,12 @@ export default defineComponent({
     },
 
     protoOptions() {
-      var bounds_cords = this.$refs.map.leafletObject.getBounds();
-      var northWest = bounds_cords.getNorthWest(),
-        southEast = bounds_cords.getSouthEast();
+      // var bounds_cords = this.$refs.map.leafletObject.getBounds();
+      // var northWest = bounds_cords.getNorthWest(),
+      //  southEast = bounds_cords.getSouthEast();
 
       return {
-        north_west_lat: northWest.lat,
-        north_west_lng: northWest.lng,
-        south_east_lat: southEast.lat,
-        south_east_lng: southEast.lng,
+        
       };
     },
     tileUrl() {

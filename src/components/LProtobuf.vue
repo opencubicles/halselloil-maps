@@ -16,13 +16,10 @@ export default {
     layer: String
   },
   setup(props, context) {
-    const params = new URLSearchParams(props.properties).toString();
+    // const params = new URLSearchParams(props.properties).toString();
 
     const tileServerURL =
-      "https://d2xhgfg6pp43w3.cloudfront.net/{z}/{x}/{y}?layer=" +
-      props.layer +
-      "&" +
-      params;
+      "https://d2xhgfg6pp43w3.cloudfront.net/{z}/{x}/{y}?layer=" + props.layer;
 
     const leafletRef = ref({});
     const useGlobalLeaflet = inject(GLOBAL_LEAFLET_OPT);
