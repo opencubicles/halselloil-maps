@@ -23,12 +23,7 @@
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
      
-      <l-protobuf
-        :options="optionsSurveySections"
-        :properties="protoOptions"
-        layer="survey_section_layer"
-      />
-
+      
       
        <l-protobuf
         :options="optionsSurveySections"
