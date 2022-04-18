@@ -19,7 +19,7 @@ export default {
     // const params = new URLSearchParams(props.properties).toString();
 
     const tileServerURL =
-      "https://tileserver.opencubicles.com/tiles/public.well_lines_layer/{z}/{x}/{y}.pbf?addrid=700039091";
+      "https://tileserver.opencubicles.com/tiles/public."+props.layer+"/{z}/{x}/{y}.pbf?addrid=700039091"
 
     const leafletRef = ref({});
     const useGlobalLeaflet = inject(GLOBAL_LEAFLET_OPT);

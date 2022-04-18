@@ -22,13 +22,13 @@
       @update:center="centerUpdate"
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
+     
       <l-protobuf
         :options="optionsSurveySections"
         :properties="protoOptions"
-        layer="survey_block_layer"
+        layer="survey_section_layer"
       />
 
-    
 
       <l-control position="topleft">
         <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
@@ -84,7 +84,7 @@ export default defineComponent({
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom: 2,
+      zoom: 8,
       prev_zoom: 6,
       last_fetched_data_zoom: 6,
       map: null,
