@@ -29,6 +29,14 @@
         layer="survey_section_layer"
       />
 
+      
+       <l-protobuf
+        :options="optionsSurveySections"
+        :properties="protoOptions"
+        layer="parcels"
+      />
+
+
 
       <l-control position="topleft">
         <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
