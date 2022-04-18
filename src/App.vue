@@ -28,34 +28,7 @@
         layer="survey_block_layer"
       />
 
-      <l-protobuf
-        :options="optionsSurveySections"
-        :properties="protoOptions"
-        layer="survey_section_layer"
-      />
-
-      <l-protobuf
-        :options="optionsSurveyLines"
-        :properties="protoOptions"
-        layer="survey_lines_layer"
-      />
-      <l-protobuf
-        :options="optionsSurveyPoints"
-        :properties="protoOptions"
-        layer="survey_points_layer"
-      />
-
-      <l-protobuf
-        :options="optionsWellLines"
-        :properties="protoOptions"
-        layer="well_lines_layer"
-      />
-
-      <l-protobuf
-        :options="optionsWellPoints"
-        :properties="protoOptions"
-        layer="well_points_layer"
-      />
+    
 
       <l-control position="topleft">
         <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
@@ -111,7 +84,7 @@ export default defineComponent({
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom: 8,
+      zoom: 2,
       prev_zoom: 6,
       last_fetched_data_zoom: 6,
       map: null,
