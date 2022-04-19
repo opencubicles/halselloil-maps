@@ -28,7 +28,7 @@
        <l-protobuf
         :options="optionsSurveySections"
         :properties="protoOptions"
-        layer="parcels"
+        layer="survey_p_layer"
       />
 
 
