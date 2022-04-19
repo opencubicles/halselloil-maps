@@ -180,7 +180,7 @@ export default defineComponent({
     },
     optionsWellPoints() {
       return {
-        color: "yellow",
+        color: "#9b870c",
         radius: 0.001,
         strokeWidth: 0.001
       };
