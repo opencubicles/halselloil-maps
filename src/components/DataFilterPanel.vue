@@ -509,9 +509,8 @@
                                 <input
                                     class="form-check-input switch-visible"
                                     type="checkbox"
-                                    checked
+                                    checked  
                                     
-                                    @click="layers.toggleLayer('survey-layers')"
                                     value="surv"
                                 />
                             </div>
@@ -522,7 +521,7 @@
                         </div>
                     </summary>
                     <div class="filter-contents">
-                        <div class="row">
+                        <div class="row d-none">
                             <div class="items-left">
                                 <label
                                     class="survey-label"
@@ -543,7 +542,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row d-none">
                             <div class="items-left">
                                 <label
                                     class="survey-label"
@@ -560,7 +559,6 @@
                                         type="checkbox"
                                         value="pls_township"
                                         id="flexSwitchTownship"
-                                        checked
                                         @click="layers.toggleLayer('survey-block-layer')"
                                     />
                                 </div>
@@ -571,7 +569,7 @@
                                 <label
                                     class="survey-label"
                                     style="font-weight:300 !important;"
-                                    >PLS Section/Abstract</label
+                                    >PLS Sections</label
                                 >
                             </div>
                             <div class="items-right">
@@ -583,7 +581,6 @@
                                         type="checkbox"
                                         value="pls_abstract"
                                         id="flexSwitchAbstract"
-                                        checked
                                         @click="layers.toggleLayer('survey-section-layer')"
                                     />
                                 </div>
@@ -594,7 +591,7 @@
                                 <label
                                     class="survey-label"
                                     style="font-weight:300 !important;"
-                                    >PLS Intersected</label
+                                    >PLS Intersected/Lines</label
                                 >
                             </div>
                             <div class="items-right">
@@ -606,7 +603,6 @@
                                         type="checkbox"
                                         value="pls_intersected"
                                         id="flexSwitchIntersected"
-                                        checked
                                         @click="layers.toggleLayer('survey-lines-layer')"
                                     />
                                 </div>
@@ -617,7 +613,7 @@
                                 <label
                                     class="survey-label"
                                     style="font-weight:300 !important;"
-                                    >TX Surveys</label
+                                    >TX Surveys Abstracts</label
                                 >
                             </div>
                             <div class="items-right">
@@ -629,8 +625,104 @@
                                         type="checkbox"
                                         value="tx_surveys"
                                         id="flexSwitchCheckCheckedTexasSurvey"
-                                        checked
+                                        
                                         @click="layers.toggleLayer('survey-points-layer')"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="items-left">
+                                <label
+                                    class="survey-label"
+                                    style="font-weight:300 !important;"
+                                    >TX Surveys Labels</label
+                                >
+                            </div>
+                            <div class="items-right">
+                                <div
+                                    class="form-check form-switch switch-position"
+                                >
+                                    <input
+                                        class="form-check-input switch-visible js-survey-item"
+                                        type="checkbox"
+                                        value="tx_surveys_labels"
+                                        id="flexSwitchCheckCheckedTexasSurvey"
+                                        
+                                        @click="layers.toggleLayer('survey-lab-points-layer')"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+            <div class="data-filter-well">
+                <details>
+                    <summary class="pointer-off">
+                        <div class="items-left">
+                            <h6>Wells</h6>
+                        </div>
+                        <div class="items-right">
+                            <div class="form-check form-switch switch-position">
+                                <input
+                                    class="form-check-input switch-visible"
+                                    type="checkbox"
+                                    checked  
+                                    
+                                    value="well"
+                                />
+                            </div>
+                            <i
+                                class="expand-icons arrow-expand-icon pointer-on"
+                                
+                            ></i>
+                        </div>
+                    </summary>
+                    <div class="filter-contents">
+                        
+                        <div class="row">
+                            <div class="items-left">
+                                <label
+                                    class="survey-label"
+                                    style="font-weight:300 !important;"
+                                    >Well Lines</label
+                                >
+                            </div>
+                            <div class="items-right">
+                                <div
+                                    class="form-check form-switch switch-position"
+                                >
+                                    <input
+                                        class="form-check-input switch-visible js-well-item"
+                                        type="checkbox"
+                                        value="well_lines"
+                                        id="flexSwitchWLines"
+                                        @click="layers.toggleLayer('well-lines-layer')"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="items-left">
+                                <label
+                                    class="survey-label"
+                                    style="font-weight:300 !important;"
+                                    >Well Points</label
+                                >
+                            </div>
+                            <div class="items-right">
+                                <div
+                                    class="form-check form-switch switch-position"
+                                >
+                                    <input
+                                        class="form-check-input switch-visible js-well-item"
+                                        type="checkbox"
+                                        value="well_points"
+                                        id="flexSwitchWPoints"
+                                        @click="layers.toggleLayer('well-points-layer')"
                                     />
                                 </div>
                             </div>

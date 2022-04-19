@@ -11,7 +11,6 @@ import L from "leaflet";
 import "leaflet.vectorgrid";
 export default {
   props: {
-    properties: Object,
     options: Object,
     layer: String
   },
@@ -37,9 +36,7 @@ export default {
         interactive: true,
         vectorTileLayerStyles: {
           geojsonLayer: vectorStyles,
-          sliced: {
-            radius: 0.1
-          }
+          
         }
       });
       const listeners = remapEvents(context.attrs);

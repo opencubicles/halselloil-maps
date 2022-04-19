@@ -22,16 +22,48 @@
       @update:center="centerUpdate"
     >
       <l-tile-layer :url="tileUrl" :options="tileOptions"> </l-tile-layer>
-     
+      <template>
       
-      
-       <l-protobuf
+      <l-protobuf
+        v-if="survey_section_layer"
         :options="optionsSurveySections"
-        :properties="protoOptions"
+        
         layer="survey_p_layer"
       />
 
+      <l-protobuf
+        v-if="survey_lines_layer"
+        :options="optionsSurveyLines"
+        layer="survey_l_layer"
+      />
 
+      <l-protobuf
+        v-if="survey_points_layer"
+        :options="optionsSurveySections"
+        layer="survey_abspt_layer"
+      />
+
+      <l-protobuf
+        v-if="survey_lab_points_layer"
+        :options="optionsSurveyLabels"
+        layer="survey_labpt_layer"
+      />
+
+      <l-protobuf
+        v-if="well_lines_layer"
+        :options="optionsWellLines"
+        layer="well_l_layer"
+      />
+
+      <l-protobuf
+        v-if="well_points_layer"
+        :options="optionsWellPoints"
+        layer="well_s_layer"
+      />
+
+
+
+      </template>
 
       <l-control position="topleft">
         <data-filter-panel v-model="show" @changeTile="currentTile = $event" />
@@ -59,7 +91,6 @@ import "leaflet/dist/leaflet.css";
 import "@/assets/css/map.css";
 import FilterPanel from "./components/FilterPanel";
 import DataFilterPanel from "./components/DataFilterPanel";
-import debounce from "lodash/debounce";
 
 import { defineComponent } from "vue";
 import { useFiltersStore } from "./stores/filters";
@@ -87,7 +118,7 @@ export default defineComponent({
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom: 10,
+      zoom: 12,
       prev_zoom: 6,
       last_fetched_data_zoom: 6,
       map: null,
@@ -97,7 +128,7 @@ export default defineComponent({
       survey_points_layer: false,
       survey_lines_layer: false,
       well_points_layer: false,
-      well_lines_layer: true,
+      well_lines_layer: false,
       survey_block_layer_key: 0,
       parsed_data: {},
       currentCenter: [32.01579054148046, -102.0183563232422],
@@ -142,12 +173,7 @@ export default defineComponent({
     },
     optionsWellLines() {
       return {
-        weight: 2,
-        color: "grey",
-        fillColor: "rgba(124,240,10,0.5)",
-        fillOpacity: 0,
-        radius: 0.1,
-        strokeWidth: 0.1,
+        color: "grey"
       };
     },
     optionsWellPoints() {
@@ -184,15 +210,6 @@ export default defineComponent({
       };
     },
 
-    protoOptions() {
-      // var bounds_cords = this.$refs.map.leafletObject.getBounds();
-      // var northWest = bounds_cords.getNorthWest(),
-      //  southEast = bounds_cords.getSouthEast();
-
-      return {
-        
-      };
-    },
     tileUrl() {
       return this.tiles[this.currentTile].url;
     },
@@ -217,112 +234,98 @@ export default defineComponent({
 
     refresh() {
       this.map = this.$refs.map.leafletObject;
-      this.bounds = this.map.getBounds();
-      if (this.zoom >= 4) {
-        this.fetchBackendData();
-        const DEBOUNCE_TIME = 100;
-        const vm_this = this;
-        this.map.on(
-          "dragend",
-          debounce(function () {
-            vm_this.fetchBackendData("dragend");
-          }, DEBOUNCE_TIME)
-        );
-        this.map.on(
-          "zoomend",
-          debounce(function () {
-            vm_this.fetchBackendData("zoomend");
-          }, DEBOUNCE_TIME)
-        );
-      }
+      this.fetchBackendData();
+      
+      
     },
-    fetchBackendData(event) {
-      if (this.zoom < 4) {
-        return;
-      }
-      if (event == "zoomend" && this.prev_zoom < this.zoom) {
-        this.prev_zoom = this.zoom;
+    fetchBackendData() {
+      
+      // if (event == "zoomend" && this.prev_zoom < this.zoom) {
+      //   this.prev_zoom = this.zoom;
 
-        return;
-      }
+      //   return;
+      // }
 
-      this.prev_zoom = this.zoom;
+      // this.prev_zoom = this.zoom;
 
-      if (event == "zoomend" && this.last_fetched_data_zoom <= this.zoom) {
-        return;
-      }
+      // if (event == "zoomend" && this.last_fetched_data_zoom <= this.zoom) {
+      //   return;
+      // }
+
       this.last_fetched_data_zoom = this.zoom;
 
-      let show_any_survey_layers =
-        this.layers.showLayers.lastIndexOf("survey-layers");
-      if (show_any_survey_layers > -1) {
-        let show_survey_block_layer =
-          this.layers.showLayers.lastIndexOf("survey-block-layer");
+      let show_survey_block_layer =
+        this.layers.showLayers.lastIndexOf("survey-block-layer");
 
-        if (show_survey_block_layer > -1) {
-          this.survey_block_layer = true;
-        } else {
-          this.survey_block_layer = false;
-        }
-
-        let show_survey_section_layer = this.layers.showLayers.lastIndexOf(
-          "survey-section-layer"
-        );
-
-        if (show_survey_section_layer > -1) {
-          this.survey_section_layer = true;
-        } else {
-          this.survey_section_layer = false;
-        }
-
-        let show_survey_points_layer = this.layers.showLayers.lastIndexOf(
-          "survey-points-layer"
-        );
-
-        if (show_survey_points_layer > -1) {
-          this.survey_points_layer = true;
-        } else {
-          this.survey_points_layer = false;
-        }
-
-        let show_survey_lines_layer =
-          this.layers.showLayers.lastIndexOf("survey-lines-layer");
-
-        if (show_survey_lines_layer > -1) {
-          this.survey_lines_layer = true;
-        } else {
-          this.survey_lines_layer = false;
-        }
+      if (show_survey_block_layer > -1) {
+        this.survey_block_layer = true;
       } else {
         this.survey_block_layer = false;
-        this.survey_lines_layer = false;
-        this.survey_points_layer = false;
+      }
+
+      let show_survey_section_layer = this.layers.showLayers.lastIndexOf(
+        "survey-section-layer"
+      );
+
+      if (show_survey_section_layer > -1) {
+        this.survey_section_layer = true;
+      } else {
         this.survey_section_layer = false;
       }
 
-      // if(this.survey_block_layer){
-      //   this.survey_block_layer += 1;
-      // }
-      // if(this.survey_section_layer){
-      //   this.survey_section_layer = false
-      //   this.survey_section_layer = true
-      // }
-      // if(this.survey_lines_layer){
-      //   this.survey_lines_layer = false
-      //   this.survey_lines_layer = true
-      // }
-      // if(this.survey_points_layer){
-      //   this.survey_points_layer = false
-      //   this.survey_points_layer = true
-      // }
-      // if(this.well_points_layer){
-      //   this.well_points_layer = false
-      //   this.well_points_layer = true
-      // }
-      // if(this.well_lines_layer){
-      //   this.well_lines_layer = false
-      //   this.well_lines_layer = true
-      // }
+      let show_survey_points_layer = this.layers.showLayers.lastIndexOf(
+        "survey-points-layer"
+      );
+
+      if (show_survey_points_layer > -1) {
+        this.survey_points_layer = true;
+      } else {
+        this.survey_points_layer = false;
+      }
+
+      let show_survey_lines_layer =
+        this.layers.showLayers.lastIndexOf("survey-lines-layer");
+
+      if (show_survey_lines_layer > -1) {
+        this.survey_lines_layer = true;
+      } else {
+        this.survey_lines_layer = false;
+      }
+
+      let show_survey_lab_points_layer =
+        this.layers.showLayers.lastIndexOf("survey-lab-points-layer");
+
+      if (show_survey_lab_points_layer > -1) {
+        this.survey_lab_points_layer = true;
+      } else {
+        this.survey_lab_points_layer = false;
+      }
+
+
+      let show_well_points_layer =
+        this.layers.showLayers.lastIndexOf("well-points-layer");
+
+      if (show_well_points_layer > -1) {
+        this.well_points_layer = true;
+      } else {
+        this.well_points_layer = false;
+      }
+
+      let show_well_lines_layer =
+        this.layers.showLayers.lastIndexOf("well-lines-layer");
+
+      if (show_well_lines_layer > -1) {
+        this.well_lines_layer = true;
+      } else {
+        this.well_lines_layer = false;
+      }
+
+      
+
+      
+
+      
+      
     },
   },
 });
