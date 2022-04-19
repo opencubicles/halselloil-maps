@@ -87,7 +87,7 @@ export default defineComponent({
   data() {
     return {
       axiosCancelToken: undefined,
-      zoom: 8,
+      zoom: 10,
       prev_zoom: 6,
       last_fetched_data_zoom: 6,
       map: null,
