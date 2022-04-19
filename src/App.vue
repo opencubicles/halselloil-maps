@@ -203,12 +203,16 @@ export default defineComponent({
     },
     optionsSurveyPoints() {
       return {
-        color: "black"
+        color: "black",
+        radius: 0.001,
+        strokeWidth: 0.001
       };
     },
     optionsSurveyLabPoints() {
       return {
-        color: "pink"
+        color: "pink",
+        radius: 0.001,
+        strokeWidth: 0.001
       };
     },
 
