@@ -25,19 +25,17 @@ export default {
     const addLayer = inject("addLayer");
     const { methods } = vectorLayerSetup(props, leafletRef, context);
     onMounted(async () => {
-      console.log("mounted");
       const { DomEvent } = useGlobalLeaflet
         ? WINDOW_OR_GLOBAL.L
         : await import("leaflet/dist/leaflet-src.esm");
-
-      const vectorStyles = props.options;
+      const passed_layer = props.layer
+      const vectorStyles = {};
+      vectorStyles["public."+passed_layer] = props.options
       console.log(vectorStyles);
       leafletRef.value = L.vectorGrid.protobuf(tileServerURL, {
         interactive: true,
-        vectorTileLayerStyles: {
-          geojsonLayer: vectorStyles,
-          
-        }
+        vectorTileLayerStyles: vectorStyles
+      
       });
       const listeners = remapEvents(context.attrs);
       DomEvent.on(leafletRef.value, listeners);

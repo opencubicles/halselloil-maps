@@ -39,13 +39,13 @@
 
       <l-protobuf
         v-if="survey_points_layer"
-        :options="optionsSurveySections"
+        :options="optionsSurveyPoints"
         layer="survey_abspt_layer"
       />
 
       <l-protobuf
         v-if="survey_lab_points_layer"
-        :options="optionsSurveyLabels"
+        :options="optionsSurveyLabPoints"
         layer="survey_labpt_layer"
       />
 
@@ -129,6 +129,7 @@ export default defineComponent({
       survey_lines_layer: false,
       well_points_layer: false,
       well_lines_layer: false,
+      survey_lab_points_layer: false,
       survey_block_layer_key: 0,
       parsed_data: {},
       currentCenter: [32.01579054148046, -102.0183563232422],
@@ -165,8 +166,9 @@ export default defineComponent({
       return {
         weight: 2,
         color: "red",
+        fill: "true",
         fillColor: "rgba(124,240,10,0.5)",
-        fillOpacity: 0,
+        fillOpacity: 0.2,
         radius: 0.1,
         strokeWidth: 0.1,
       };
@@ -196,17 +198,17 @@ export default defineComponent({
 
     optionsSurveyLines() {
       return {
-        weight: 0.5,
-        color: "blue",
-        radius: 0.1,
-        strokeWidth: 0.1,
+        color: "blue"
       };
     },
     optionsSurveyPoints() {
       return {
-        color: "black",
-        radius: 0.1,
-        strokeWidth: 0.1,
+        color: "black"
+      };
+    },
+    optionsSurveyLabPoints() {
+      return {
+        color: "pink"
       };
     },
 
