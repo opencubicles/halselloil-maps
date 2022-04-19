@@ -165,7 +165,7 @@ export default defineComponent({
     optionsSurveySections() {
       return {
         weight: 2,
-        color: "red",
+        color: "#880808",
         fill: "true",
         fillColor: "rgba(124,240,10,0.5)",
         fillOpacity: 0.2,
@@ -180,7 +180,7 @@ export default defineComponent({
     },
     optionsWellPoints() {
       return {
-        color: "#9b870c",
+        color: "blue",
         radius: 0.001,
         strokeWidth: 0.001
       };
@@ -188,7 +188,7 @@ export default defineComponent({
     optionsSurveyBlocks() {
       return {
         weight: 4,
-        fillColor: "rgba(124,240,10,0.5)",
+        fillColor: "#EE4B2B",
         fillOpacity: 0,
         color: "black",
         radius: 0.1,
@@ -198,19 +198,19 @@ export default defineComponent({
 
     optionsSurveyLines() {
       return {
-        color: "blue"
+        color: "#DC143C"
       };
     },
     optionsSurveyPoints() {
       return {
-        color: "black",
+        color: "#AA4A44",
         radius: 0.001,
         strokeWidth: 0.001
       };
     },
     optionsSurveyLabPoints() {
       return {
-        color: "pink",
+        color: "#FF6347",
         radius: 0.001,
         strokeWidth: 0.001
       };
