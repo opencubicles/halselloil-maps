@@ -18,7 +18,7 @@ export default {
     // const params = new URLSearchParams(props.properties).toString();
 //props.layer 
     const tileServerURL =
-      "https://tileserver.opencubicles.com/tiles/public."+ props.layer  +"/{z}/{x}/{y}.pbf"
+      "https://d1w96h5ui6pnds.cloudfront.net/tiles/public."+ props.layer  +"/{z}/{x}/{y}.pbf"
 
     const leafletRef = ref({});
     const useGlobalLeaflet = inject(GLOBAL_LEAFLET_OPT);
@@ -38,7 +38,10 @@ export default {
           geojsonLayer: vectorStyles,
           
         }
-      });
+      }).on('click',function(e) {
+    console.log(e);
+
+});
       const listeners = remapEvents(context.attrs);
       DomEvent.on(leafletRef.value, listeners);
       propsBinder(methods, leafletRef.value, props);
