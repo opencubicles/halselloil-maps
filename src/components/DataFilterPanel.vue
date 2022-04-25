@@ -569,7 +569,7 @@
                                 <label
                                     class="survey-label"
                                     style="font-weight:300 !important;"
-                                    >PLS Sections</label
+                                    >PLS Sections survey-section-layer</label
                                 >
                             </div>
                             <div class="items-right">
@@ -591,7 +591,7 @@
                                 <label
                                     class="survey-label"
                                     style="font-weight:300 !important;"
-                                    >PLS Intersected/Lines</label
+                                    >PLS Intersected/Lines survey-lines-layer</label
                                 >
                             </div>
                             <div class="items-right">
@@ -613,7 +613,7 @@
                                 <label
                                     class="survey-label"
                                     style="font-weight:300 !important;"
-                                    >TX Surveys Abstracts</label
+                                    >TX Surveys Abstracts survey-points-layer</label
                                 >
                             </div>
                             <div class="items-right">
@@ -637,7 +637,7 @@
                                 <label
                                     class="survey-label"
                                     style="font-weight:300 !important;"
-                                    >TX Surveys Labels</label
+                                    >TX Surveys Labels survey-lab-points-layer</label
                                 >
                             </div>
                             <div class="items-right">
